@@ -35,25 +35,26 @@ const Header = ({ settings }: { settings?: any }) => {
     <header id="theme-header" className="w-full bg-white">
       <div className="container mx-auto py-8 px-4 bg-white">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-          {/* Logo Area */}
-          <div id="logo" className="flex items-center gap-6">
-            <a href="/" className="block group">
-              <div className="relative">
-                <Image 
-                  src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain"
-                  alt="Kurdish Four Organization"
-                  width={140}
-                  height={140}
-                  className="w-24 md:w-32 h-auto object-contain transition-transform group-hover:scale-105"
-                  priority
-                />
+            {/* Logo Area */}
+            <div id="logo" className="flex items-center gap-6">
+              <a href="/" className="block group">
+                <div className="relative">
+                  <Image 
+                    src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain"
+                    alt="Kurdish Four Organization"
+                    width={140}
+                    height={140}
+                    className="w-24 md:w-32 h-auto object-contain transition-transform group-hover:scale-105"
+                    priority
+                  />
+                </div>
+              </a>
+              <div className="h-16 md:h-20 w-1 bg-[#563a4a]"></div>
+              <div className="text-left">
+                <h1 className="text-2xl md:text-4xl font-black text-[#563a4a] leading-tight tracking-tight">رێكخراوی كوردی چوار</h1>
+                <p className="text-lg text-gray-500 font-medium mt-1">بۆ زانست و پەروەردە</p>
               </div>
-            </a>
-            <div className="text-left border-l-4 border-[#563a4a] pl-6">
-              <h1 className="text-2xl md:text-4xl font-black text-[#563a4a] leading-tight tracking-tight">رێكخراوی كوردی چوار</h1>
-              <p className="text-lg text-gray-500 font-medium mt-1">بۆ زانست و پەروەردە</p>
             </div>
-          </div>
 
           {/* Search Area (Desktop) */}
           <div className="hidden md:flex items-center flex-1 max-w-lg mx-12">

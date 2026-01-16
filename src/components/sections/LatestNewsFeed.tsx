@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
-import { Share2, Facebook, Linkedin, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Share2, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -13,6 +13,7 @@ interface Article {
   created_at: string;
   views: number;
   image_url: string;
+  tags?: string[];
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -38,10 +39,10 @@ export default function LatestNewsFeed() {
         setCategories(map);
       }
 
-      // Build query
-      let query = supabase.from('posts').select('*', { count: 'exact' });
-      
-      if (selectedCategory) {
+        // Build query
+        let query = supabase.from('posts').select('*', { count: 'exact' }).eq('status', 'published');
+        
+        if (selectedCategory) {
         query = query.eq('category', selectedCategory);
       }
 
@@ -52,7 +53,17 @@ export default function LatestNewsFeed() {
       if (error) {
         console.error('Error fetching posts:', error);
       } else {
-        setArticles(data || []);
+        const postsWithTags = await Promise.all((data || []).map(async (post) => {
+          const { data: tagData } = await supabase
+            .from('post_tags')
+            .select('tags(name)')
+            .eq('post_id', post.id);
+          return {
+            ...post,
+            tags: tagData?.map((t: any) => t.tags.name) || []
+          };
+        }));
+        setArticles(postsWithTags);
         setTotalCount(count || 0);
       }
       setLoading(false);
@@ -64,21 +75,6 @@ export default function LatestNewsFeed() {
   const categoryList = Object.keys(categories);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-
-  const handleShare = (platform: string, title: string) => {
-    const url = typeof window !== 'undefined' ? window.location.href : '';
-    let shareUrl = '';
-    
-    if (platform === 'facebook') {
-      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-    } else if (platform === 'linkedin') {
-      shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-    }
-    
-    if (shareUrl) {
-      window.open(shareUrl, '_blank', 'width=600,height=400');
-    }
-  };
 
   if (loading && articles.length === 0) {
     return (
@@ -147,32 +143,14 @@ export default function LatestNewsFeed() {
                 {article.excerpt}
               </p>
               
-              <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-8">
-                <a 
-                  href={`/post/${article.id}`}
-                  className="bg-[#563a4a] hover:bg-[#c29181] text-white px-8 py-4 rounded-2xl text-sm font-black transition-all duration-300 shadow-xl shadow-[#563a4a]/10 hover:-translate-y-1 inline-block"
-                >
-                  زیاتر بخوێنەرەوە
-                </a>
-
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest ml-2 hidden sm:block">بڵاوکردنەوە</span>
-                  <button 
-                    onClick={() => handleShare('facebook', article.title)}
-                    className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#1877F2] hover:text-white transition-all"
-                    title="Share on Facebook"
+                <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-8">
+                  <a 
+                    href={`/post/${article.id}`}
+                    className="bg-[#563a4a] hover:bg-[#c29181] text-white px-8 py-4 rounded-2xl text-sm font-black transition-all duration-300 shadow-xl shadow-[#563a4a]/10 hover:-translate-y-1 inline-block"
                   >
-                    <Facebook size={18} />
-                  </button>
-                    <button 
-                      onClick={() => handleShare('linkedin', article.title)}
-                      className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#0077B5] hover:text-white transition-all"
-                      title="Share on LinkedIn"
-                    >
-                      <Linkedin size={18} />
-                    </button>
+                    زیاتر بخوێنەرەوە
+                  </a>
                 </div>
-              </div>
             </div>
           </div>
         ))}

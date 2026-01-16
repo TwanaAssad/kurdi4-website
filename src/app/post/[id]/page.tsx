@@ -6,7 +6,7 @@ import Footer from "@/components/sections/Footer";
 import SidebarWidgets from "@/components/sections/SidebarWidgets";
 import { getSiteSettings } from "@/lib/settings";
 import { supabase } from "@/lib/supabase";
-import { Eye, Calendar, User, Share2, Facebook, Twitter, Linkedin, Copy } from 'lucide-react';
+import { Eye, Calendar, User, Twitter, Copy } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 interface PostPageProps {
@@ -29,13 +29,21 @@ async function getPost(id: string) {
     .eq('name', data.category)
     .single();
 
+  // Get tags
+  const { data: tagData } = await supabase
+    .from('post_tags')
+    .select('tags(name)')
+    .eq('post_id', id);
+
+  const tags = tagData?.map((t: any) => t.tags.name) || [];
+
   // Increment views
   await supabase
     .from('posts')
     .update({ views: (data.views || 0) + 1 })
     .eq('id', id);
 
-  return { ...data, categorySlug: catData?.slug };
+  return { ...data, categorySlug: catData?.slug, tags };
 }
 
 export default async function PostPage({ params }: PostPageProps) {
@@ -115,26 +123,23 @@ export default async function PostPage({ params }: PostPageProps) {
               {/* Share Buttons */}
               <div className="mt-16 pt-10 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <span className="font-black text-[#563a4a] ml-4">بڵاوکردنەوە:</span>
-                  <button className="w-12 h-12 rounded-2xl bg-[#1877F2]/10 text-[#1877F2] flex items-center justify-center hover:bg-[#1877F2] hover:text-white transition-all">
-                    <Facebook size={20} />
-                  </button>
-                  <button className="w-12 h-12 rounded-2xl bg-[#1DA1F2]/10 text-[#1DA1F2] flex items-center justify-center hover:bg-[#1DA1F2] hover:text-white transition-all">
-                    <Twitter size={20} />
-                  </button>
-                  <button className="w-12 h-12 rounded-2xl bg-[#0077B5]/10 text-[#0077B5] flex items-center justify-center hover:bg-[#0077B5] hover:text-white transition-all">
-                    <Linkedin size={20} />
-                  </button>
-                  <button className="w-12 h-12 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-all">
-                    <Copy size={20} />
-                  </button>
-                </div>
+                    <span className="font-black text-[#563a4a] ml-4">بڵاوکردنەوە:</span>
+                    <button className="w-12 h-12 rounded-2xl bg-[#1DA1F2]/10 text-[#1DA1F2] flex items-center justify-center hover:bg-[#1DA1F2] hover:text-white transition-all">
+                      <Twitter size={20} />
+                    </button>
+                    <button className="w-12 h-12 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-all">
+                      <Copy size={20} />
+                    </button>
+                  </div>
                 
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500">#زانست</span>
-                  <span className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500">#پەروەردە</span>
-                  <span className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500">#کوردستان</span>
-                </div>
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags?.map((tag: string) => (
+                      <span key={tag} className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-[#c29181]/10 hover:text-[#c29181] transition-colors cursor-default">#{tag}</span>
+                    ))}
+                    {(!post.tags || post.tags.length === 0) && (
+                      <span className="text-gray-300 text-xs font-bold italic">هیچ تاگێک نییە</span>
+                    )}
+                  </div>
               </div>
             </div>
           </article>
