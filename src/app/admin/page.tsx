@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import * as actions from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -224,17 +225,10 @@ export default function AdminPage() {
   }, []);
 
     const fetchStats = async () => {
-      const { count: postCount } = await supabase.from('posts').select('*', { count: 'exact', head: true });
-      const { count: catCount } = await supabase.from('categories').select('*', { count: 'exact', head: true });
-      const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-      const { data: recentPosts } = await supabase.from('posts').select('title, created_at').order('created_at', { ascending: false }).limit(5);
-
+      const data = await actions.getStatsAction();
       setStats((prev: any) => ({
         ...prev,
-        totalPosts: postCount || 0,
-        totalCategories: catCount || 0,
-        totalUsers: userCount || 0,
-        recentActivity: recentPosts || []
+        ...data
       }));
     };
 
@@ -253,108 +247,58 @@ export default function AdminPage() {
     };
 
   const fetchSettings = async () => {
-    const { data, error } = await supabase.from('site_settings').select('*').eq('id', 1).single();
-    if (!error && data) setSettings(data);
+    const data = await actions.getSiteSettingsAction();
+    if (data) setSettings(data);
   };
 
   const fetchPosts = async () => {
-    let query = supabase.from('posts').select(`
-      *,
-      profiles:author_id (full_name),
-      category_name:category_id (name),
-      sub_category_name:sub_category_id (name)
-    `, { count: 'exact' }).order('created_at', { ascending: false });
-
-    if (searchTerm) {
-      query = query.ilike('title', `%${searchTerm}%`);
-    }
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
-    if (authorFilter !== 'all') {
-      query = query.eq('author_id', authorFilter);
-    }
-    if (dateFilter) {
-      query = query.gte('created_at', dateFilter);
-    }
-
-    // Pagination
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-    query = query.range(from, to);
-
-    const { data, error, count } = await query;
-    if (!error && data) {
-      setTotalCount(count || 0);
-      // Fetch tags for each post
-      const postsWithTags = await Promise.all(data.map(async (post) => {
-        const { data: tagsData } = await supabase.from('post_tags').select('tag_id').eq('post_id', post.id);
-        return { ...post, post_tags: tagsData || [] };
-      }));
-      setPosts(postsWithTags);
-    }
+    const { data, count } = await actions.getPostsAction({
+      searchTerm,
+      statusFilter,
+      authorFilter,
+      dateFilter,
+      page: currentPage,
+      pageSize
+    });
+    setTotalCount(count || 0);
+    setPosts(data || []);
   };
 
   const fetchCategories = async () => {
-    const { data, error } = await supabase.from('categories').select('*').order('name', { ascending: true });
-    if (!error) setCategories(data || []);
+    const data = await actions.getCategoriesAction();
+    setCategories(data || []);
   };
 
   const fetchTags = async () => {
-    const { data, error } = await supabase.from('tags').select('*').order('name', { ascending: true });
-    if (!error) setTags(data || []);
+    const data = await actions.getTagsAction();
+    setTags(data || []);
   };
 
   const fetchMenuItems = async () => {
-    const { data, error } = await supabase.from('menu_items').select('*').order('sort_order', { ascending: true });
-    if (!error) setDbMenuItems(data || []);
+    const data = await actions.getMenuItemsAction();
+    setDbMenuItems(data || []);
   };
 
   const fetchPages = async () => {
-    let query = supabase.from('pages').select(`
-      *,
-      profiles:author_id (full_name)
-    `, { count: 'exact' }).order('created_at', { ascending: false });
-
-    if (searchTerm) {
-      query = query.ilike('title', `%${searchTerm}%`);
-    }
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
-
-    // Pagination
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-    query = query.range(from, to);
-
-    const { data, error, count } = await query;
-    if (!error && data) {
-      setTotalCount(count || 0);
-      setPages(data || []);
-    }
+    const { data, count } = await actions.getPagesAction({
+      searchTerm,
+      statusFilter,
+      page: currentPage,
+      pageSize
+    });
+    setTotalCount(count || 0);
+    setPages(data || []);
   };
 
   const fetchProfiles = async () => {
-    let query = supabase.from('profiles').select('*', { count: 'exact' }).order('created_at', { ascending: false });
-
-    if (searchTerm) {
-      query = query.ilike('full_name', `%${searchTerm}%`);
-    }
-    if (statusFilter !== 'all' && statusFilter !== 'deleted') {
-       query = query.eq('status', statusFilter === 'published' ? 'active' : 'suspended');
-    }
-
-    // Pagination
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-    query = query.range(from, to);
-
-    const { data, error, count } = await query;
-    if (!error && data) {
-      setTotalCount(count || 0);
-      setProfiles(data || []);
-    }
+    const { data, count } = await actions.getProfilesAction({
+      searchTerm,
+      statusFilter,
+      page: currentPage,
+      pageSize
+    });
+    setTotalCount(count || 0);
+    setProfiles(data || []);
   };
 
   // Re-fetch when page changes
@@ -546,56 +490,44 @@ export default function AdminPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    let error;
+    let result: any = { success: false };
 
-    if (editingId) {
-      if (activeTab === 'posts') {
-        const { error: err } = await supabase.from('posts').update({
-          title: formData.title,
-          content: formData.content,
-          excerpt: formData.excerpt,
-          category: formData.category,
-          category_id: formData.category_id || null,
-          sub_category_id: formData.sub_category_id || null,
-          image_url: formData.image_url,
-          status: formData.status
-        }).eq('id', editingId);
-        
-        if (!err) {
-          // Update tags
-          await supabase.from('post_tags').delete().eq('post_id', editingId);
-          if (formData.selectedTags.length > 0) {
-            await supabase.from('post_tags').insert(
-              formData.selectedTags.map((tagId: string) => ({ post_id: editingId, tag_id: tagId }))
-            );
-          }
-        }
-        error = err;
-      } else if (activeTab === 'tags') {
-        const { error: err } = await supabase.from('tags').update({
-          name: formData.name,
-          slug: formData.slug
-        }).eq('id', editingId);
-        error = err;
-      } else if (activeTab === 'menu') {
-        const { error: err } = await supabase.from('menu_items').update({
-          label: formData.menuLabel,
-          type: formData.menuType,
-          target_id: formData.menuTargetId || null,
-          url: formData.menuUrl || null,
-          sort_order: formData.menuSortOrder,
-          parent_id: formData.menuParentId || null
-        }).eq('id', editingId);
-        error = err;
-      } else if (activeTab === 'categories') {
-        const { error: err } = await supabase.from('categories').update({
-          name: formData.name,
-          slug: formData.slug,
-          parent_id: formData.parent_id || null
-        }).eq('id', editingId);
-        error = err;
+    try {
+      if (editingId) {
+        if (activeTab === 'posts') {
+          result = await actions.updatePostAction(Number(editingId), {
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt,
+            category: formData.category,
+            category_id: formData.category_id ? Number(formData.category_id) : null,
+            sub_category_id: formData.sub_category_id ? Number(formData.sub_category_id) : null,
+            image_url: formData.image_url,
+            status: formData.status,
+            selectedTags: formData.selectedTags.map(Number)
+          });
+        } else if (activeTab === 'tags') {
+          result = await actions.updateTagAction(Number(editingId), {
+            name: formData.name,
+            slug: formData.slug
+          });
+        } else if (activeTab === 'menu') {
+          result = await actions.updateMenuItemAction(Number(editingId), {
+            label: formData.menuLabel,
+            type: formData.menuType,
+            target_id: formData.menuTargetId || null,
+            url: formData.menuUrl || null,
+            sort_order: formData.menuSortOrder,
+            parent_id: formData.menuParentId ? Number(formData.menuParentId) : null
+          });
+        } else if (activeTab === 'categories') {
+          result = await actions.updateCategoryAction(Number(editingId), {
+            name: formData.name,
+            slug: formData.slug,
+            parent_id: formData.parent_id ? Number(formData.parent_id) : null
+          });
         } else if (activeTab === 'pages') {
-          const { error: err } = await supabase.from('pages').update({
+          result = await actions.updatePageAction(Number(editingId), {
             title: formData.title,
             content: formData.content,
             status: formData.status,
@@ -605,78 +537,69 @@ export default function AdminPage() {
             card2_content: formData.card2_content,
             card3_title: formData.card3_title,
             card3_content: formData.card3_content
-          }).eq('id', editingId);
-          error = err;
-      } else if (activeTab === 'users') {
-        const { error: err } = await supabase.from('profiles').update({
-          full_name: formData.full_name,
-          role: formData.role,
-          avatar_url: formData.avatar_url,
-          status: formData.status
-        }).eq('id', editingId);
-        error = err;
-      }
-    } else {
-      if (activeTab === 'posts') {
-        const { data, error: err } = await supabase.from('posts').insert([{
-          title: formData.title,
-          content: formData.content,
-          excerpt: formData.excerpt,
-          category: formData.category,
-          category_id: formData.category_id || null,
-          sub_category_id: formData.sub_category_id || null,
-          image_url: formData.image_url,
-          status: formData.status,
-          author_id: user.id
-        }]).select();
-        
-        if (!err && data?.[0]) {
-          if (formData.selectedTags.length > 0) {
-            await supabase.from('post_tags').insert(
-              formData.selectedTags.map((tagId: string) => ({ post_id: data[0].id, tag_id: tagId }))
-            );
-          }
+          });
+        } else if (activeTab === 'users') {
+          result = await actions.updateProfileAction(editingId.toString(), {
+            full_name: formData.full_name,
+            role: formData.role,
+            avatar_url: formData.avatar_url,
+            status: formData.status
+          });
         }
-        error = err;
-      } else if (activeTab === 'tags') {
-        const { error: err } = await supabase.from('tags').insert([{ name: formData.name, slug: formData.slug }]);
-        error = err;
-      } else if (activeTab === 'menu') {
-        const { error: err } = await supabase.from('menu_items').insert([{
-          label: formData.menuLabel,
-          type: formData.menuType,
-          target_id: formData.menuTargetId || null,
-          url: formData.menuUrl || null,
-          sort_order: formData.menuSortOrder,
-          parent_id: formData.menuParentId || null
-        }]);
-        error = err;
-      } else if (activeTab === 'categories') {
-        const { error: err } = await supabase.from('categories').insert([{ 
-          name: formData.name, 
-          slug: formData.slug,
-          parent_id: formData.parent_id || null
-        }]);
-        error = err;
+      } else {
+        if (activeTab === 'posts') {
+          result = await actions.createPostAction({
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt,
+            category: formData.category,
+            category_id: formData.category_id ? Number(formData.category_id) : null,
+            sub_category_id: formData.sub_category_id ? Number(formData.sub_category_id) : null,
+            image_url: formData.image_url,
+            status: formData.status,
+            author_id: user.id,
+            selectedTags: formData.selectedTags.map(Number)
+          });
+        } else if (activeTab === 'tags') {
+          result = await actions.createTagAction({ name: formData.name, slug: formData.slug });
+        } else if (activeTab === 'menu') {
+          result = await actions.createMenuItemAction({
+            label: formData.menuLabel,
+            type: formData.menuType,
+            target_id: formData.menuTargetId || null,
+            url: formData.menuUrl || null,
+            sort_order: formData.menuSortOrder,
+            parent_id: formData.menuParentId ? Number(formData.menuParentId) : null
+          });
+        } else if (activeTab === 'categories') {
+          result = await actions.createCategoryAction({ 
+            name: formData.name, 
+            slug: formData.slug,
+            parent_id: formData.parent_id ? Number(formData.parent_id) : null
+          });
+        }
       }
-    }
 
-    setLoading(false);
-    if (error) {
-      toast.error('هەڵەیەک ڕوویدا: ' + error.message);
-    } else {
-      toast.success(editingId ? 'بە سەرکەوتوویی نوێکرایەوە!' : 'بە سەرکەوتوویی زیادکرا!');
-      resetForm();
-      fetchData();
+      if (result.success) {
+        toast.success(editingId ? 'بە سەرکەوتوویی نوێکرایەوە!' : 'بە سەرکەوتوویی زیادکرا!');
+        resetForm();
+        fetchData();
+      } else {
+        toast.error('هەڵەیەک ڕوویدا');
+      }
+    } catch (err: any) {
+      toast.error('هەڵەیەک ڕوویدا: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSettingsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.from('site_settings').update(settings).eq('id', 1);
+    const result = await actions.updateSiteSettingsAction(settings);
     setLoading(false);
-    if (error) toast.error('هەڵە لە نوێکردنەوەی ڕێکخستنەکان');
+    if (!result.success) toast.error('هەڵە لە نوێکردنەوەی ڕێکخستنەکان');
     else {
       toast.success('ڕێکخستنەکان بە سەرکەوتوویی پارێزران!');
       fetchSettings();
@@ -691,28 +614,31 @@ export default function AdminPage() {
   const handleDelete = async () => {
     if (!itemToDelete) return;
     setLoading(true);
-    let table = '';
+    let result: any = { success: false };
     
-    switch (activeTab) {
-      case 'posts': table = 'posts'; break;
-      case 'categories': table = 'categories'; break;
-      case 'tags': table = 'tags'; break;
-      case 'menu': table = 'menu_items'; break;
-      case 'pages': table = 'pages'; break;
-      case 'users': table = 'profiles'; break;
-      default: return;
-    }
+    try {
+      switch (activeTab) {
+        case 'posts': result = await actions.deletePostAction(Number(itemToDelete.id)); break;
+        case 'categories': result = await actions.deleteCategoryAction(Number(itemToDelete.id)); break;
+        case 'tags': result = await actions.deleteTagAction(Number(itemToDelete.id)); break;
+        case 'menu': result = await actions.deleteMenuItemAction(Number(itemToDelete.id)); break;
+        case 'pages': result = await actions.deletePageAction(Number(itemToDelete.id)); break;
+        case 'users': result = await actions.deleteProfileAction(itemToDelete.id.toString()); break;
+        default: return;
+      }
 
-    const { error } = await supabase.from(table).delete().eq('id', itemToDelete.id);
-    setLoading(false);
-    setIsDeleteDialogOpen(false);
-    setItemToDelete(null);
-
-    if (error) {
-      toast.error('هەڵەیەک لە سڕینەوەدا ڕوویدا: ' + error.message);
-    } else {
-      toast.success('بە سەرکەوتوویی سڕایەوە');
-      fetchData();
+      if (result.success) {
+        toast.success('بە سەرکەوتوویی سڕایەوە');
+        fetchData();
+      } else {
+        toast.error('هەڵەیەک لە سڕینەوەدا ڕوویدا');
+      }
+    } catch (err: any) {
+      toast.error('هەڵەیەک لە سڕینەوەدا ڕوویدا: ' + err.message);
+    } finally {
+      setLoading(false);
+      setIsDeleteDialogOpen(false);
+      setItemToDelete(null);
     }
   };
 

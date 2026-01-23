@@ -1,0 +1,266 @@
+"use server";
+
+import { db } from "./db";
+import { 
+  posts, 
+  categories, 
+  tags, 
+  postTags, 
+  menuItems, 
+  pages, 
+  profiles, 
+  siteSettings 
+} from "./schema";
+import { eq, desc, and, count, sql, or, like } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
+// --- Posts ---
+export async function getPostsAction(params: any = {}) {
+  const { searchTerm, statusFilter, authorFilter, dateFilter, page = 1, pageSize = 10 } = params;
+  const offset = (page - 1) * pageSize;
+
+  let conditions = [];
+  if (searchTerm) conditions.push(like(posts.title, `%${searchTerm}%`));
+  if (statusFilter && statusFilter !== 'all') conditions.push(eq(posts.status, statusFilter as any));
+  if (authorFilter && authorFilter !== 'all') conditions.push(eq(posts.author_id, authorFilter));
+  if (dateFilter) conditions.push(sql`${posts.created_at} >= ${dateFilter}`);
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const data = await db.query.posts.findMany({
+    where: whereClause,
+    orderBy: [desc(posts.created_at)],
+    limit: pageSize,
+    offset: offset,
+  });
+
+  const totalResult = await db.select({ value: count() }).from(posts).where(whereClause);
+  
+  // Fetch tags for each post
+  const postsWithTags = await Promise.all(data.map(async (post) => {
+    const t = await db.select({ tag_id: postTags.tag_id }).from(postTags).where(eq(postTags.post_id, post.id));
+    return { ...post, post_tags: t };
+  }));
+
+  return { data: postsWithTags, count: totalResult[0].value };
+}
+
+export async function createPostAction(data: any) {
+  const { selectedTags, ...postData } = data;
+  const [result] = await db.insert(posts).values(postData);
+  const postId = result.insertId;
+
+  if (selectedTags && selectedTags.length > 0) {
+    await db.insert(postTags).values(
+      selectedTags.map((tagId: number) => ({ post_id: postId, tag_id: tagId }))
+    );
+  }
+  revalidatePath("/admin");
+  return { success: true, id: postId };
+}
+
+export async function updatePostAction(id: number, data: any) {
+  const { selectedTags, ...postData } = data;
+  await db.update(posts).set(postData).where(eq(posts.id, id));
+
+  // Update tags
+  await db.delete(postTags).where(eq(postTags.post_id, id));
+  if (selectedTags && selectedTags.length > 0) {
+    await db.insert(postTags).values(
+      selectedTags.map((tagId: number) => ({ post_id: id, tag_id: tagId }))
+    );
+  }
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function deletePostAction(id: number) {
+  await db.delete(postTags).where(eq(postTags.post_id, id));
+  await db.delete(posts).where(eq(posts.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+// --- Categories ---
+export async function getCategoriesAction() {
+  const data = await db.query.categories.findMany({
+    orderBy: [desc(categories.name)],
+  });
+  return data;
+}
+
+export async function createCategoryAction(data: any) {
+  await db.insert(categories).values(data);
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function updateCategoryAction(id: number, data: any) {
+  await db.update(categories).set(data).where(eq(categories.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function deleteCategoryAction(id: number) {
+  await db.delete(categories).where(eq(categories.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+// --- Tags ---
+export async function getTagsAction() {
+  return await db.query.tags.findMany({
+    orderBy: [desc(tags.name)],
+  });
+}
+
+export async function createTagAction(data: any) {
+  await db.insert(tags).values(data);
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function updateTagAction(id: number, data: any) {
+  await db.update(tags).set(data).where(eq(tags.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function deleteTagAction(id: number) {
+  await db.delete(tags).where(eq(tags.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+// --- Menu Items ---
+export async function getMenuItemsAction() {
+  return await db.query.menuItems.findMany({
+    orderBy: [desc(menuItems.sort_order)],
+  });
+}
+
+export async function createMenuItemAction(data: any) {
+  await db.insert(menuItems).values(data);
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function updateMenuItemAction(id: number, data: any) {
+  await db.update(menuItems).set(data).where(eq(menuItems.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function deleteMenuItemAction(id: number) {
+  await db.delete(menuItems).where(eq(menuItems.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+// --- Pages ---
+export async function getPagesAction(params: any = {}) {
+  const { searchTerm, statusFilter, page = 1, pageSize = 10 } = params;
+  const offset = (page - 1) * pageSize;
+
+  let conditions = [];
+  if (searchTerm) conditions.push(like(pages.title, `%${searchTerm}%`));
+  if (statusFilter && statusFilter !== 'all') conditions.push(eq(pages.status, statusFilter));
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const data = await db.query.pages.findMany({
+    where: whereClause,
+    orderBy: [desc(pages.created_at)],
+    limit: pageSize,
+    offset: offset,
+  });
+
+  const totalResult = await db.select({ value: count() }).from(pages).where(whereClause);
+  return { data, count: totalResult[0].value };
+}
+
+export async function createPageAction(data: any) {
+  await db.insert(pages).values(data);
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function updatePageAction(id: number, data: any) {
+  await db.update(pages).set(data).where(eq(pages.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function deletePageAction(id: number) {
+  await db.delete(pages).where(eq(pages.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+// --- Profiles ---
+export async function getProfilesAction(params: any = {}) {
+  const { searchTerm, statusFilter, page = 1, pageSize = 10 } = params;
+  const offset = (page - 1) * pageSize;
+
+  let conditions = [];
+  if (searchTerm) conditions.push(like(profiles.full_name, `%${searchTerm}%`));
+  if (statusFilter && statusFilter !== 'all' && statusFilter !== 'deleted') {
+    conditions.push(eq(profiles.status, statusFilter === 'published' ? 'active' : 'suspended'));
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const data = await db.query.profiles.findMany({
+    where: whereClause,
+    orderBy: [desc(profiles.created_at)],
+    limit: pageSize,
+    offset: offset,
+  });
+
+  const totalResult = await db.select({ value: count() }).from(profiles).where(whereClause);
+  return { data, count: totalResult[0].value };
+}
+
+export async function updateProfileAction(id: string, data: any) {
+  await db.update(profiles).set(data).where(eq(profiles.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function deleteProfileAction(id: string) {
+  await db.delete(profiles).where(eq(profiles.id, id));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+// --- Site Settings ---
+export async function getSiteSettingsAction() {
+  const data = await db.query.siteSettings.findFirst({
+    where: eq(siteSettings.id, 1),
+  });
+  return data;
+}
+
+export async function updateSiteSettingsAction(data: any) {
+  await db.update(siteSettings).set(data).where(eq(siteSettings.id, 1));
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+// --- Stats ---
+export async function getStatsAction() {
+  const postCount = await db.select({ value: count() }).from(posts);
+  const catCount = await db.select({ value: count() }).from(categories);
+  const userCount = await db.select({ value: count() }).from(profiles);
+  const recentPosts = await db.query.posts.findMany({
+    orderBy: [desc(posts.created_at)],
+    limit: 5,
+  });
+
+  return {
+    totalPosts: postCount[0].value,
+    totalCategories: catCount[0].value,
+    totalUsers: userCount[0].value,
+    recentActivity: recentPosts
+  };
+}
