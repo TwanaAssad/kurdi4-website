@@ -531,17 +531,19 @@ export default function AdminPage() {
             parent_id: formData.parent_id ? Number(formData.parent_id) : null
           });
         } else if (activeTab === 'pages') {
-          result = await actions.updatePageAction(Number(editingId), {
-            title: formData.title,
-            content: formData.content,
-            status: formData.status,
-            card1_title: formData.card1_title,
-            card1_content: formData.card1_content,
-            card2_title: formData.card2_title,
-            card2_content: formData.card2_content,
-            card3_title: formData.card3_title,
-            card3_content: formData.card3_content
-          });
+            result = await actions.updatePageAction(Number(editingId), {
+              title: formData.title,
+              content: formData.content,
+              slug: formData.slug,
+              status: formData.status,
+              card1_title: formData.card1_title,
+              card1_content: formData.card1_content,
+              card2_title: formData.card2_title,
+              card2_content: formData.card2_content,
+              card3_title: formData.card3_title,
+              card3_content: formData.card3_content
+            });
+
         } else if (activeTab === 'users') {
           result = await actions.updateProfileAction(editingId.toString(), {
             full_name: formData.full_name,
@@ -576,12 +578,27 @@ export default function AdminPage() {
             parent_id: formData.menuParentId ? Number(formData.menuParentId) : null
           });
         } else if (activeTab === 'categories') {
-          result = await actions.createCategoryAction({ 
-            name: formData.name, 
-            slug: formData.slug,
-            parent_id: formData.parent_id ? Number(formData.parent_id) : null
-          });
-        }
+            result = await actions.createCategoryAction({ 
+              name: formData.name, 
+              slug: formData.slug,
+              parent_id: formData.parent_id ? Number(formData.parent_id) : null
+            });
+          } else if (activeTab === 'pages') {
+            result = await actions.createPageAction({
+              title: formData.title,
+              content: formData.content,
+              slug: formData.slug,
+              status: formData.status,
+              card1_title: formData.card1_title,
+              card1_content: formData.card1_content,
+              card2_title: formData.card2_title,
+              card2_content: formData.card2_content,
+              card3_title: formData.card3_title,
+              card3_content: formData.card3_content,
+              author_id: user.id
+            });
+          }
+
       }
 
       if (result.success) {
@@ -861,9 +878,10 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              {viewMode === 'list' && activeTab !== 'settings' && activeTab !== 'pages' && (
-                <Button 
+              <div className="flex items-center gap-4">
+                {viewMode === 'list' && activeTab !== 'settings' && (
+                  <Button 
+
                   onClick={() => { resetForm(); setViewMode('form'); }}
                   className="bg-[#563a4a] hover:bg-[#c29181] text-white font-black rounded-xl h-12 px-6 shadow-lg shadow-[#563a4a]/20 gap-2 transition-all hover:-translate-y-1 active:translate-y-0"
                 >
@@ -1862,8 +1880,13 @@ export default function AdminPage() {
                                   <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">ناونیشانی لاپەڕە</Label>
                                   <Input value={formData.title} onChange={(e) => setFormData((p: any) => ({...p, title: e.target.value}))} required className="rounded-2xl h-20 border-neutral-100 bg-neutral-50 text-right font-black text-2xl px-10 shadow-sm" />
                                 </div>
-                                <div className="md:col-span-4 space-y-4">
-                                  <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">بارودۆخ</Label>
+                                  <div className="md:col-span-4 space-y-4">
+                                    <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">ناسنامە (Slug)</Label>
+                                    <Input value={formData.slug} onChange={(e) => setFormData((p: any) => ({...p, slug: e.target.value}))} required className="rounded-2xl h-20 border-neutral-100 bg-neutral-50 px-8 font-bold ltr shadow-sm" placeholder="about-us" />
+                                  </div>
+                                  <div className="md:col-span-4 space-y-4">
+                                    <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">بارودۆخ</Label>
+
                                   <select 
                                     value={formData.status} 
                                     onChange={(e) => setFormData((p: any) => ({...p, status: e.target.value}))} 

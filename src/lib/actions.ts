@@ -307,10 +307,15 @@ export async function deleteProfileAction(id: string) {
 
 // --- Site Settings ---
 export async function getSiteSettingsAction() {
-  const data = await db.query.siteSettings.findFirst({
-    where: eq(siteSettings.id, 1),
-  });
-  return data;
+  try {
+    const data = await db.query.siteSettings.findFirst({
+      where: eq(siteSettings.id, 1),
+    });
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch site settings:", error);
+    return null;
+  }
 }
 
 export async function updateSiteSettingsAction(data: any) {

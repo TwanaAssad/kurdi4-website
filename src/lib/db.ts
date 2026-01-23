@@ -8,6 +8,6 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not defined");
 }
 
-const connection = await mysql.createConnection(connectionString);
+const poolConnection = mysql.createPool(connectionString);
 
-export const db = drizzle(connection, { schema, mode: "default" });
+export const db = drizzle(poolConnection, { schema, mode: "default" });
