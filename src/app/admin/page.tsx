@@ -319,32 +319,36 @@ export default function AdminPage() {
   // Upload Logic
   const handleFileUpload = async (file: File, field: string) => {
     setUploading(true);
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `uploads/${fileName}`;
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const { error: uploadError } = await supabase.storage
-      .from('uploads')
-      .upload(filePath, file);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (uploadError) {
-      toast.error('هەڵە لە بارکردنی فایل: ' + uploadError.message);
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to upload');
+      }
+
+      const publicUrl = data.publicUrl;
+
+      if (field === 'logo') {
+        setSettings((prev: any) => ({ ...prev, logo_url: publicUrl }));
+      } else {
+        setFormData((prev: any) => ({ ...prev, [field]: publicUrl }));
+      }
+
+      toast.success('فایلەکە بە سەرکەوتوویی بارکرا');
+    } catch (error: any) {
+      toast.error('هەڵە لە بارکردنی فایل: ' + error.message);
+    } finally {
       setUploading(false);
-      return;
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('uploads')
-      .getPublicUrl(filePath);
-
-    if (field === 'logo') {
-      setSettings((prev: any) => ({ ...prev, logo_url: publicUrl }));
-    } else {
-      setFormData((prev: any) => ({ ...prev, [field]: publicUrl }));
-    }
-
-    setUploading(false);
-    toast.success('فایلەکە بە سەرکەوتوویی بارکرا');
   };
 
   const imageDropzone = useDropzone({
@@ -500,8 +504,8 @@ export default function AdminPage() {
             content: formData.content,
             excerpt: formData.excerpt,
             category: formData.category,
-            category_id: formData.category_id ? Number(formData.category_id) : null,
-            sub_category_id: formData.sub_category_id ? Number(formData.sub_category_id) : null,
+            category_id: formData.category_id && !isNaN(parseInt(formData.category_id)) ? parseInt(formData.category_id) : null,
+            sub_category_id: formData.sub_category_id && !isNaN(parseInt(formData.sub_category_id)) ? parseInt(formData.sub_category_id) : null,
             image_url: formData.image_url,
             status: formData.status,
             selectedTags: formData.selectedTags.map(Number)
@@ -553,8 +557,8 @@ export default function AdminPage() {
             content: formData.content,
             excerpt: formData.excerpt,
             category: formData.category,
-            category_id: formData.category_id ? Number(formData.category_id) : null,
-            sub_category_id: formData.sub_category_id ? Number(formData.sub_category_id) : null,
+            category_id: formData.category_id && !isNaN(parseInt(formData.category_id)) ? parseInt(formData.category_id) : null,
+            sub_category_id: formData.sub_category_id && !isNaN(parseInt(formData.sub_category_id)) ? parseInt(formData.sub_category_id) : null,
             image_url: formData.image_url,
             status: formData.status,
             author_id: user.id,

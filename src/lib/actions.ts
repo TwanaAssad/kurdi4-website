@@ -49,16 +49,18 @@ export async function createPostAction(data: any) {
   const { selectedTags, ...postData } = data;
   
   // Cleanup numeric fields that might be empty strings from forms
-  if (postData.category_id === "" || postData.category_id === undefined) {
+  if (postData.category_id === "" || postData.category_id === undefined || postData.category_id === null) {
     postData.category_id = null;
   } else {
-    postData.category_id = parseInt(postData.category_id);
+    const parsed = parseInt(postData.category_id);
+    postData.category_id = isNaN(parsed) ? null : parsed;
   }
   
-  if (postData.sub_category_id === "" || postData.sub_category_id === undefined) {
+  if (postData.sub_category_id === "" || postData.sub_category_id === undefined || postData.sub_category_id === null) {
     postData.sub_category_id = null;
   } else {
-    postData.sub_category_id = parseInt(postData.sub_category_id);
+    const parsed = parseInt(postData.sub_category_id);
+    postData.sub_category_id = isNaN(parsed) ? null : parsed;
   }
 
   const [result] = await db.insert(posts).values(postData);
@@ -77,16 +79,18 @@ export async function updatePostAction(id: number, data: any) {
   const { selectedTags, ...postData } = data;
 
   // Cleanup numeric fields
-  if (postData.category_id === "" || postData.category_id === undefined) {
+  if (postData.category_id === "" || postData.category_id === undefined || postData.category_id === null) {
     postData.category_id = null;
   } else {
-    postData.category_id = parseInt(postData.category_id);
+    const parsed = parseInt(postData.category_id);
+    postData.category_id = isNaN(parsed) ? null : parsed;
   }
   
-  if (postData.sub_category_id === "" || postData.sub_category_id === undefined) {
+  if (postData.sub_category_id === "" || postData.sub_category_id === undefined || postData.sub_category_id === null) {
     postData.sub_category_id = null;
   } else {
-    postData.sub_category_id = parseInt(postData.sub_category_id);
+    const parsed = parseInt(postData.sub_category_id);
+    postData.sub_category_id = isNaN(parsed) ? null : parsed;
   }
 
   await db.update(posts).set(postData).where(eq(posts.id, id));
@@ -119,10 +123,11 @@ export async function getCategoriesAction() {
 
 export async function createCategoryAction(data: any) {
   const categoryData = { ...data };
-  if (categoryData.parent_id === "" || categoryData.parent_id === undefined) {
+  if (categoryData.parent_id === "" || categoryData.parent_id === undefined || categoryData.parent_id === null) {
     categoryData.parent_id = null;
   } else {
-    categoryData.parent_id = parseInt(categoryData.parent_id);
+    const parsed = parseInt(categoryData.parent_id);
+    categoryData.parent_id = isNaN(parsed) ? null : parsed;
   }
   await db.insert(categories).values(categoryData);
   revalidatePath("/admin");
@@ -131,10 +136,11 @@ export async function createCategoryAction(data: any) {
 
 export async function updateCategoryAction(id: number, data: any) {
   const categoryData = { ...data };
-  if (categoryData.parent_id === "" || categoryData.parent_id === undefined) {
+  if (categoryData.parent_id === "" || categoryData.parent_id === undefined || categoryData.parent_id === null) {
     categoryData.parent_id = null;
   } else {
-    categoryData.parent_id = parseInt(categoryData.parent_id);
+    const parsed = parseInt(categoryData.parent_id);
+    categoryData.parent_id = isNaN(parsed) ? null : parsed;
   }
   await db.update(categories).set(categoryData).where(eq(categories.id, id));
   revalidatePath("/admin");
@@ -181,15 +187,17 @@ export async function getMenuItemsAction() {
 
 export async function createMenuItemAction(data: any) {
   const itemData = { ...data };
-  if (itemData.parent_id === "" || itemData.parent_id === undefined) {
+  if (itemData.parent_id === "" || itemData.parent_id === undefined || itemData.parent_id === null) {
     itemData.parent_id = null;
   } else {
-    itemData.parent_id = parseInt(itemData.parent_id);
+    const parsed = parseInt(itemData.parent_id);
+    itemData.parent_id = isNaN(parsed) ? null : parsed;
   }
-  if (itemData.sort_order === "" || itemData.sort_order === undefined) {
+  if (itemData.sort_order === "" || itemData.sort_order === undefined || itemData.sort_order === null) {
     itemData.sort_order = 0;
   } else {
-    itemData.sort_order = parseInt(itemData.sort_order);
+    const parsed = parseInt(itemData.sort_order);
+    itemData.sort_order = isNaN(parsed) ? 0 : parsed;
   }
   await db.insert(menuItems).values(itemData);
   revalidatePath("/admin");
@@ -198,15 +206,17 @@ export async function createMenuItemAction(data: any) {
 
 export async function updateMenuItemAction(id: number, data: any) {
   const itemData = { ...data };
-  if (itemData.parent_id === "" || itemData.parent_id === undefined) {
+  if (itemData.parent_id === "" || itemData.parent_id === undefined || itemData.parent_id === null) {
     itemData.parent_id = null;
   } else {
-    itemData.parent_id = parseInt(itemData.parent_id);
+    const parsed = parseInt(itemData.parent_id);
+    itemData.parent_id = isNaN(parsed) ? null : parsed;
   }
-  if (itemData.sort_order === "" || itemData.sort_order === undefined) {
+  if (itemData.sort_order === "" || itemData.sort_order === undefined || itemData.sort_order === null) {
     itemData.sort_order = 0;
   } else {
-    itemData.sort_order = parseInt(itemData.sort_order);
+    const parsed = parseInt(itemData.sort_order);
+    itemData.sort_order = isNaN(parsed) ? 0 : parsed;
   }
   await db.update(menuItems).set(itemData).where(eq(menuItems.id, id));
   revalidatePath("/admin");
