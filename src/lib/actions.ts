@@ -47,12 +47,26 @@ export async function getPostsAction(params: any = {}) {
 
 export async function createPostAction(data: any) {
   const { selectedTags, ...postData } = data;
+  
+  // Cleanup numeric fields that might be empty strings from forms
+  if (postData.category_id === "" || postData.category_id === undefined) {
+    postData.category_id = null;
+  } else {
+    postData.category_id = parseInt(postData.category_id);
+  }
+  
+  if (postData.sub_category_id === "" || postData.sub_category_id === undefined) {
+    postData.sub_category_id = null;
+  } else {
+    postData.sub_category_id = parseInt(postData.sub_category_id);
+  }
+
   const [result] = await db.insert(posts).values(postData);
   const postId = result.insertId;
 
   if (selectedTags && selectedTags.length > 0) {
     await db.insert(postTags).values(
-      selectedTags.map((tagId: number) => ({ post_id: postId, tag_id: tagId }))
+      selectedTags.map((tagId: number | string) => ({ post_id: postId, tag_id: typeof tagId === 'string' ? parseInt(tagId) : tagId }))
     );
   }
   revalidatePath("/admin");
@@ -61,13 +75,27 @@ export async function createPostAction(data: any) {
 
 export async function updatePostAction(id: number, data: any) {
   const { selectedTags, ...postData } = data;
+
+  // Cleanup numeric fields
+  if (postData.category_id === "" || postData.category_id === undefined) {
+    postData.category_id = null;
+  } else {
+    postData.category_id = parseInt(postData.category_id);
+  }
+  
+  if (postData.sub_category_id === "" || postData.sub_category_id === undefined) {
+    postData.sub_category_id = null;
+  } else {
+    postData.sub_category_id = parseInt(postData.sub_category_id);
+  }
+
   await db.update(posts).set(postData).where(eq(posts.id, id));
 
   // Update tags
   await db.delete(postTags).where(eq(postTags.post_id, id));
   if (selectedTags && selectedTags.length > 0) {
     await db.insert(postTags).values(
-      selectedTags.map((tagId: number) => ({ post_id: id, tag_id: tagId }))
+      selectedTags.map((tagId: number | string) => ({ post_id: id, tag_id: typeof tagId === 'string' ? parseInt(tagId) : tagId }))
     );
   }
   revalidatePath("/admin");
@@ -90,13 +118,25 @@ export async function getCategoriesAction() {
 }
 
 export async function createCategoryAction(data: any) {
-  await db.insert(categories).values(data);
+  const categoryData = { ...data };
+  if (categoryData.parent_id === "" || categoryData.parent_id === undefined) {
+    categoryData.parent_id = null;
+  } else {
+    categoryData.parent_id = parseInt(categoryData.parent_id);
+  }
+  await db.insert(categories).values(categoryData);
   revalidatePath("/admin");
   return { success: true };
 }
 
 export async function updateCategoryAction(id: number, data: any) {
-  await db.update(categories).set(data).where(eq(categories.id, id));
+  const categoryData = { ...data };
+  if (categoryData.parent_id === "" || categoryData.parent_id === undefined) {
+    categoryData.parent_id = null;
+  } else {
+    categoryData.parent_id = parseInt(categoryData.parent_id);
+  }
+  await db.update(categories).set(categoryData).where(eq(categories.id, id));
   revalidatePath("/admin");
   return { success: true };
 }
@@ -140,13 +180,35 @@ export async function getMenuItemsAction() {
 }
 
 export async function createMenuItemAction(data: any) {
-  await db.insert(menuItems).values(data);
+  const itemData = { ...data };
+  if (itemData.parent_id === "" || itemData.parent_id === undefined) {
+    itemData.parent_id = null;
+  } else {
+    itemData.parent_id = parseInt(itemData.parent_id);
+  }
+  if (itemData.sort_order === "" || itemData.sort_order === undefined) {
+    itemData.sort_order = 0;
+  } else {
+    itemData.sort_order = parseInt(itemData.sort_order);
+  }
+  await db.insert(menuItems).values(itemData);
   revalidatePath("/admin");
   return { success: true };
 }
 
 export async function updateMenuItemAction(id: number, data: any) {
-  await db.update(menuItems).set(data).where(eq(menuItems.id, id));
+  const itemData = { ...data };
+  if (itemData.parent_id === "" || itemData.parent_id === undefined) {
+    itemData.parent_id = null;
+  } else {
+    itemData.parent_id = parseInt(itemData.parent_id);
+  }
+  if (itemData.sort_order === "" || itemData.sort_order === undefined) {
+    itemData.sort_order = 0;
+  } else {
+    itemData.sort_order = parseInt(itemData.sort_order);
+  }
+  await db.update(menuItems).set(itemData).where(eq(menuItems.id, id));
   revalidatePath("/admin");
   return { success: true };
 }
