@@ -8,7 +8,6 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 
 const MainNavigation = () => {
   const pathname = usePathname();
@@ -21,32 +20,21 @@ const MainNavigation = () => {
   }, []);
 
   const fetchMenu = async () => {
-    const { data: menuData } = await supabase
-      .from('menu_items')
-      .select('*')
-      .order('sort_order', { ascending: true });
-
-    if (menuData && menuData.length > 0) {
-      // Build hierarchical menu
-      const buildHierarchy = async (items: any[], parentId: string | null = null) => {
-        const levelItems = items.filter(item => item.parent_id === parentId);
-        return await Promise.all(levelItems.map(async (item) => {
-          let href = item.url || "#";
-          if (item.type === 'page') {
-            const { data: pageData } = await supabase.from('pages').select('slug').eq('id', item.target_id).single();
-            if (pageData) href = `/${pageData.slug}`;
-          } else if (item.type === 'category') {
-            const { data: catData } = await supabase.from('categories').select('slug').eq('id', item.target_id).single();
-            if (catData) href = `/category/${catData.slug}`;
-          }
-          const children = await buildHierarchy(items, item.id);
-          return { ...item, name: item.label, href, children, hasChildren: children.length > 0 };
-        }));
-      };
-
-      const hierarchicalMenu = await buildHierarchy(menuData);
-      setDbMenuItems(hierarchicalMenu);
-    } else {
+    try {
+      const res = await fetch('/api/menu');
+      const menuData = await res.json();
+      
+      if (menuData && Array.isArray(menuData)) {
+        setDbMenuItems(menuData);
+      } else {
+        setDbMenuItems([
+          { name: "سەرەتا", href: "/", hasChildren: false, children: [] },
+          { name: "دەربارەی ئێمە", href: "/about", hasChildren: false, children: [] },
+          { name: "پەیوەندی", href: "/contact", hasChildren: false, children: [] },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching menu:", error);
       setDbMenuItems([
         { name: "سەرەتا", href: "/", hasChildren: false, children: [] },
         { name: "دەربارەی ئێمە", href: "/about", hasChildren: false, children: [] },

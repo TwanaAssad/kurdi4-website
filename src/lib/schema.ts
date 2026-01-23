@@ -1,7 +1,7 @@
 import { mysqlTable, serial, text, varchar, timestamp, int, boolean, json, mysqlEnum } from "drizzle-orm/mysql-core";
 
 export const siteSettings = mysqlTable("site_settings", {
-  id: serial("id").primaryKey(),
+  id: int("id").autoincrement().primaryKey(),
   org_name: varchar("org_name", { length: 255 }).default("زانست و پەروەردەی کوردی"),
   logo_url: text("logo_url"),
   primary_color: varchar("primary_color", { length: 7 }).default("#563a4a"),
@@ -20,14 +20,14 @@ export const siteSettings = mysqlTable("site_settings", {
 });
 
 export const categories = mysqlTable("categories", {
-  id: serial("id").primaryKey(),
+  id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   parent_id: int("parent_id"),
 });
 
 export const posts = mysqlTable("posts", {
-  id: serial("id").primaryKey(),
+  id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 500 }).notNull(),
   content: text("content"),
   excerpt: text("excerpt"),
@@ -42,7 +42,7 @@ export const posts = mysqlTable("posts", {
 });
 
 export const tags = mysqlTable("tags", {
-  id: serial("id").primaryKey(),
+  id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
 });
@@ -63,7 +63,7 @@ export const profiles = mysqlTable("profiles", {
 });
 
 export const menuItems = mysqlTable("menu_items", {
-  id: serial("id").primaryKey(),
+  id: int("id").autoincrement().primaryKey(),
   label: varchar("label", { length: 255 }).notNull(),
   type: varchar("type", { length: 50 }).notNull(), // page, category, custom
   target_id: varchar("target_id", { length: 255 }),
@@ -73,7 +73,7 @@ export const menuItems = mysqlTable("menu_items", {
 });
 
 export const pages = mysqlTable("pages", {
-  id: serial("id").primaryKey(),
+  id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content"),
   slug: varchar("slug", { length: 255 }).notNull().unique(),

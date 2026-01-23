@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
 import { Share2, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface Article {
@@ -30,43 +29,34 @@ export default function LatestNewsFeed() {
   useEffect(() => {
     async function fetchPosts() {
       setLoading(true);
-      
-      // Fetch categories for slug mapping
-      const { data: catData } = await supabase.from('categories').select('name, slug');
-      if (catData) {
-        const map: Record<string, string> = {};
-        catData.forEach(c => map[c.name] = c.slug);
-        setCategories(map);
-      }
+      try {
+        // Fetch categories for slug mapping
+        const catRes = await fetch('/api/categories');
+        const catData = await catRes.json();
+        if (catData && Array.isArray(catData)) {
+          const map: Record<string, string> = {};
+          catData.forEach(c => map[c.name] = c.slug);
+          setCategories(map);
+        }
 
-        // Build query
-        let query = supabase.from('posts').select('*', { count: 'exact' }).eq('status', 'published');
-        
+        // Build query URL
+        let url = `/api/posts?page=${page}&limit=${ITEMS_PER_PAGE}`;
         if (selectedCategory) {
-        query = query.eq('category', selectedCategory);
-      }
+          url += `&category=${encodeURIComponent(selectedCategory)}`;
+        }
 
-      const { data, count, error } = await query
-        .order('created_at', { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+        const res = await fetch(url);
+        const { data, total } = await res.json();
 
-      if (error) {
+        if (data) {
+          setArticles(data);
+          setTotalCount(total || 0);
+        }
+      } catch (error) {
         console.error('Error fetching posts:', error);
-      } else {
-        const postsWithTags = await Promise.all((data || []).map(async (post) => {
-          const { data: tagData } = await supabase
-            .from('post_tags')
-            .select('tags(name)')
-            .eq('post_id', post.id);
-          return {
-            ...post,
-            tags: tagData?.map((t: any) => t.tags.name) || []
-          };
-        }));
-        setArticles(postsWithTags);
-        setTotalCount(count || 0);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     fetchPosts();

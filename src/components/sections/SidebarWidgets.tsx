@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 
   interface Post {
@@ -26,44 +25,17 @@ import { Facebook, Instagram, Youtube } from 'lucide-react';
       async function fetchData() {
         try {
           // Fetch latest posts
-          const { data: postsData, error: postsError } = await supabase
-            .from('posts')
-            .select('*')
-            .eq('status', 'published')
-            .order('created_at', { ascending: false })
-            .limit(5);
-
-          if (postsError) {
-            console.error('Error fetching posts:', postsError);
-          } else if (postsData) {
-            setLatestPosts(postsData);
+          const postsRes = await fetch('/api/posts?limit=5');
+          const postsData = await postsRes.json();
+          if (postsData.data) {
+            setLatestPosts(postsData.data);
           }
 
           // Fetch all categories and their counts
-          const { data: categoriesData, error: categoriesError } = await supabase
-            .from('categories')
-            .select('*');
-
-          if (categoriesError) {
-            console.error('Error fetching categories:', categoriesError);
-          } else if (categoriesData) {
-            // For now, let's just set the categories and fetch counts later or differently 
-            // to avoid potential JSON parsing issues with 'head: true'
-            const categoriesWithCounts = categoriesData.map((cat: any) => ({ ...cat, count: 0 }));
-            setCategories(categoriesWithCounts);
-            
-            // Try to fetch counts without head: true
-            for (let i = 0; i < categoriesData.length; i++) {
-              const cat = categoriesData[i];
-              const { count } = await supabase
-                .from('posts')
-                .select('id', { count: 'exact' })
-                .eq('status', 'published')
-                .eq('category', cat.name)
-                .limit(0); // This should be enough to get the count
-              
-              setCategories(prev => prev.map(c => c.name === cat.name ? { ...c, count: count || 0 } : c));
-            }
+          const categoriesRes = await fetch('/api/categories');
+          const categoriesData = await categoriesRes.json();
+          if (Array.isArray(categoriesData)) {
+            setCategories(categoriesData);
           }
         } catch (err) {
           console.error('Unexpected error in fetchData:', err);

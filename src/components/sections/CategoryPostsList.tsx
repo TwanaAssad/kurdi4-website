@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
 import { Share2, Facebook, Linkedin, ChevronRight, ChevronLeft, Calendar, Eye, Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
@@ -31,35 +30,26 @@ function CategoryPostsContent({ categoryName }: CategoryPostsListProps) {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
-  useEffect(() => {
-    async function fetchPosts() {
-      setLoading(true);
-      
-      let query = supabase
-        .from('posts')
-        .select('*', { count: 'exact' })
-        .eq('category', categoryName);
-
-      if (subFilter) {
-        // Simple search in title/content for sub-items
-        query = query.or(`title.ilike.%${subFilter}%,content.ilike.%${subFilter}%`);
+    useEffect(() => {
+      async function fetchPosts() {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/posts?category=${encodeURIComponent(categoryName)}&search=${encodeURIComponent(subFilter || '')}&page=${page}&limit=${ITEMS_PER_PAGE}`);
+          const { data, total } = await res.json();
+          
+          if (data) {
+            setArticles(data);
+            setTotalCount(total || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching posts:', error);
+        } finally {
+          setLoading(false);
+        }
       }
-
-      const { data, count, error } = await query
-        .order('created_at', { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
-
-      if (error) {
-        console.error('Error fetching posts:', error);
-      } else {
-        setArticles(data || []);
-        setTotalCount(count || 0);
-      }
-      setLoading(false);
-    }
-
-    fetchPosts();
-  }, [page, categoryName, subFilter]);
+  
+      fetchPosts();
+    }, [page, categoryName, subFilter]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
