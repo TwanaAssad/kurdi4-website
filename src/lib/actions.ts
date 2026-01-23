@@ -11,8 +11,33 @@ import {
   profiles, 
   siteSettings 
 } from "./schema";
-import { eq, desc, and, count, sql, or, like } from "drizzle-orm";
+import { eq, desc, and, count, sql, or, like, gte, lte } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+// --- Helper for data cleanup ---
+function cleanData(data: any, numericFields: string[] = [], ignoreFields: string[] = ["id"]) {
+  const cleaned: any = { ...data };
+  
+  // Remove ignored fields
+  ignoreFields.forEach(field => delete cleaned[field]);
+  
+  // Clean up all fields (convert empty strings to null or appropriate types)
+  Object.keys(cleaned).forEach(key => {
+    if (cleaned[key] === "" || cleaned[key] === undefined) {
+      cleaned[key] = null;
+    }
+  });
+
+  // Handle numeric fields
+  numericFields.forEach(field => {
+    if (cleaned[field] !== null) {
+      const parsed = parseInt(cleaned[field]);
+      cleaned[field] = isNaN(parsed) ? null : parsed;
+    }
+  });
+
+  return cleaned;
+}
 
 // --- Posts ---
 export async function getPostsAction(params: any = {}) {
@@ -23,7 +48,14 @@ export async function getPostsAction(params: any = {}) {
   if (searchTerm) conditions.push(like(posts.title, `%${searchTerm}%`));
   if (statusFilter && statusFilter !== 'all') conditions.push(eq(posts.status, statusFilter as any));
   if (authorFilter && authorFilter !== 'all') conditions.push(eq(posts.author_id, authorFilter));
-  if (dateFilter) conditions.push(sql`${posts.created_at} >= ${dateFilter}`);
+  
+  if (dateFilter) {
+    // Ensure date is in MySQL format
+    const dateObj = new Date(dateFilter);
+    if (!isNaN(dateObj.getTime())) {
+      conditions.push(gte(posts.created_at, dateObj));
+    }
+  }
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -46,22 +78,8 @@ export async function getPostsAction(params: any = {}) {
 }
 
 export async function createPostAction(data: any) {
-  const { selectedTags, ...postData } = data;
-  
-  // Cleanup numeric fields that might be empty strings from forms
-  if (postData.category_id === "" || postData.category_id === undefined || postData.category_id === null) {
-    postData.category_id = null;
-  } else {
-    const parsed = parseInt(postData.category_id);
-    postData.category_id = isNaN(parsed) ? null : parsed;
-  }
-  
-  if (postData.sub_category_id === "" || postData.sub_category_id === undefined || postData.sub_category_id === null) {
-    postData.sub_category_id = null;
-  } else {
-    const parsed = parseInt(postData.sub_category_id);
-    postData.sub_category_id = isNaN(parsed) ? null : parsed;
-  }
+  const { selectedTags, ...rawPostData } = data;
+  const postData = cleanData(rawPostData, ["category_id", "sub_category_id", "views"]);
 
   const [result] = await db.insert(posts).values(postData);
   const postId = result.insertId;
@@ -76,22 +94,8 @@ export async function createPostAction(data: any) {
 }
 
 export async function updatePostAction(id: number, data: any) {
-  const { selectedTags, ...postData } = data;
-
-  // Cleanup numeric fields
-  if (postData.category_id === "" || postData.category_id === undefined || postData.category_id === null) {
-    postData.category_id = null;
-  } else {
-    const parsed = parseInt(postData.category_id);
-    postData.category_id = isNaN(parsed) ? null : parsed;
-  }
-  
-  if (postData.sub_category_id === "" || postData.sub_category_id === undefined || postData.sub_category_id === null) {
-    postData.sub_category_id = null;
-  } else {
-    const parsed = parseInt(postData.sub_category_id);
-    postData.sub_category_id = isNaN(parsed) ? null : parsed;
-  }
+  const { selectedTags, ...rawPostData } = data;
+  const postData = cleanData(rawPostData, ["category_id", "sub_category_id", "views"], ["id", "created_at", "post_tags"]);
 
   await db.update(posts).set(postData).where(eq(posts.id, id));
 
@@ -122,26 +126,16 @@ export async function getCategoriesAction() {
 }
 
 export async function createCategoryAction(data: any) {
-  const categoryData = { ...data };
-  if (categoryData.parent_id === "" || categoryData.parent_id === undefined || categoryData.parent_id === null) {
-    categoryData.parent_id = null;
-  } else {
-    const parsed = parseInt(categoryData.parent_id);
-    categoryData.parent_id = isNaN(parsed) ? null : parsed;
-  }
+  const categoryData = cleanData(data, ["parent_id"]);
+
   await db.insert(categories).values(categoryData);
   revalidatePath("/admin");
   return { success: true };
 }
 
 export async function updateCategoryAction(id: number, data: any) {
-  const categoryData = { ...data };
-  if (categoryData.parent_id === "" || categoryData.parent_id === undefined || categoryData.parent_id === null) {
-    categoryData.parent_id = null;
-  } else {
-    const parsed = parseInt(categoryData.parent_id);
-    categoryData.parent_id = isNaN(parsed) ? null : parsed;
-  }
+  const categoryData = cleanData(data, ["parent_id"], ["id"]);
+
   await db.update(categories).set(categoryData).where(eq(categories.id, id));
   revalidatePath("/admin");
   return { success: true };
@@ -161,13 +155,15 @@ export async function getTagsAction() {
 }
 
 export async function createTagAction(data: any) {
-  await db.insert(tags).values(data);
+  const tagData = cleanData(data);
+  await db.insert(tags).values(tagData);
   revalidatePath("/admin");
   return { success: true };
 }
 
 export async function updateTagAction(id: number, data: any) {
-  await db.update(tags).set(data).where(eq(tags.id, id));
+  const tagData = cleanData(data, [], ["id"]);
+  await db.update(tags).set(tagData).where(eq(tags.id, id));
   revalidatePath("/admin");
   return { success: true };
 }
@@ -186,38 +182,18 @@ export async function getMenuItemsAction() {
 }
 
 export async function createMenuItemAction(data: any) {
-  const itemData = { ...data };
-  if (itemData.parent_id === "" || itemData.parent_id === undefined || itemData.parent_id === null) {
-    itemData.parent_id = null;
-  } else {
-    const parsed = parseInt(itemData.parent_id);
-    itemData.parent_id = isNaN(parsed) ? null : parsed;
-  }
-  if (itemData.sort_order === "" || itemData.sort_order === undefined || itemData.sort_order === null) {
-    itemData.sort_order = 0;
-  } else {
-    const parsed = parseInt(itemData.sort_order);
-    itemData.sort_order = isNaN(parsed) ? 0 : parsed;
-  }
+  const itemData = cleanData(data, ["parent_id", "sort_order"]);
+  if (itemData.sort_order === null) itemData.sort_order = 0;
+
   await db.insert(menuItems).values(itemData);
   revalidatePath("/admin");
   return { success: true };
 }
 
 export async function updateMenuItemAction(id: number, data: any) {
-  const itemData = { ...data };
-  if (itemData.parent_id === "" || itemData.parent_id === undefined || itemData.parent_id === null) {
-    itemData.parent_id = null;
-  } else {
-    const parsed = parseInt(itemData.parent_id);
-    itemData.parent_id = isNaN(parsed) ? null : parsed;
-  }
-  if (itemData.sort_order === "" || itemData.sort_order === undefined || itemData.sort_order === null) {
-    itemData.sort_order = 0;
-  } else {
-    const parsed = parseInt(itemData.sort_order);
-    itemData.sort_order = isNaN(parsed) ? 0 : parsed;
-  }
+  const itemData = cleanData(data, ["parent_id", "sort_order"], ["id"]);
+  if (itemData.sort_order === null) itemData.sort_order = 0;
+
   await db.update(menuItems).set(itemData).where(eq(menuItems.id, id));
   revalidatePath("/admin");
   return { success: true };
@@ -252,13 +228,15 @@ export async function getPagesAction(params: any = {}) {
 }
 
 export async function createPageAction(data: any) {
-  await db.insert(pages).values(data);
+  const pageData = cleanData(data);
+  await db.insert(pages).values(pageData);
   revalidatePath("/admin");
   return { success: true };
 }
 
 export async function updatePageAction(id: number, data: any) {
-  await db.update(pages).set(data).where(eq(pages.id, id));
+  const pageData = cleanData(data, [], ["id", "created_at"]);
+  await db.update(pages).set(pageData).where(eq(pages.id, id));
   revalidatePath("/admin");
   return { success: true };
 }
@@ -294,7 +272,8 @@ export async function getProfilesAction(params: any = {}) {
 }
 
 export async function updateProfileAction(id: string, data: any) {
-  await db.update(profiles).set(data).where(eq(profiles.id, id));
+  const profileData = cleanData(data, [], ["id", "created_at", "email"]);
+  await db.update(profiles).set(profileData).where(eq(profiles.id, id));
   revalidatePath("/admin");
   return { success: true };
 }
@@ -319,7 +298,8 @@ export async function getSiteSettingsAction() {
 }
 
 export async function updateSiteSettingsAction(data: any) {
-  await db.update(siteSettings).set(data).where(eq(siteSettings.id, 1));
+  const settingsData = cleanData(data, ["id"]);
+  await db.update(siteSettings).set(settingsData).where(eq(siteSettings.id, 1));
   revalidatePath("/admin");
   return { success: true };
 }
@@ -344,11 +324,15 @@ export async function getStatsAction() {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
     const endOfDay = new Date(date.setHours(23, 59, 59, 999));
     
+    // Format dates for MySQL
+    const startStr = startOfDay.toISOString().slice(0, 19).replace('T', ' ');
+    const endStr = endOfDay.toISOString().slice(0, 19).replace('T', ' ');
+    
     const dayCount = await db.select({ value: count() })
       .from(posts)
       .where(and(
-        sql`${posts.created_at} >= ${startOfDay}`,
-        sql`${posts.created_at} <= ${endOfDay}`
+        gte(posts.created_at, startOfDay),
+        lte(posts.created_at, endOfDay)
       ));
       
     // If we have very few posts, we can add some random factor based on views 
