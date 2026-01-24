@@ -23,10 +23,11 @@ export default async function RootLayout({
   const lang = isKurdishOnly ? 'ku' : 'en'; // Default to English if available, or stay on Kurdish
   const dir = lang === 'ku' ? 'rtl' : 'ltr';
 
-  return (
-    <html lang={lang} dir={dir}>
-      <head>
-        <style dangerouslySetInnerHTML={{ __html: `
+    return (
+      <html lang={lang} dir={dir}>
+        <head>
+          {settings.logo_url && <link rel="icon" href={settings.logo_url} />}
+          <style dangerouslySetInnerHTML={{ __html: `
           :root {
             --primary: ${settings.primary_color};
             --secondary: ${settings.secondary_color};

@@ -57,15 +57,18 @@ const Header = ({ settings }: { settings?: any }) => {
 
           {/* Search Area (Desktop) */}
           <div className="hidden md:flex items-center flex-1 max-w-lg mx-12">
-            <div className="relative w-full group">
+            <form action="/search" method="GET" className="relative w-full group">
               <input 
                 type="text" 
+                name="q"
                 placeholder="بگەڕێ بۆ بابەتەکان..." 
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-4 px-8 pr-14 focus:outline-none focus:border-[#563a4a] focus:bg-white transition-all shadow-sm"
                 dir="rtl"
               />
-              <Search size={22} className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#563a4a] transition-colors" />
-            </div>
+              <button type="submit" className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#563a4a] transition-colors">
+                <Search size={22} />
+              </button>
+            </form>
           </div>
 
           {/* Social Icons (Desktop) */}
