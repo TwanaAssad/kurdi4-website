@@ -65,7 +65,7 @@ const Header = ({ settings }: { settings?: any }) => {
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-4 px-8 pr-14 focus:outline-none focus:border-[#563a4a] focus:bg-white transition-all shadow-sm"
                 dir="rtl"
               />
-              <button type="submit" className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#563a4a] transition-colors">
+                <button type="submit" className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#563a4a] transition-colors bg-transparent border-none p-0">
                 <Search size={22} />
               </button>
             </form>

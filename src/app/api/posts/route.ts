@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { posts, categories, postTags, tags } from "@/lib/schema";
-import { eq, desc, and, count, sql, or, like } from "drizzle-orm";
+import { eq, desc, and, count, sql, or, like, aliasedTable } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,12 +27,33 @@ export async function GET(req: NextRequest) {
 
     const whereClause = and(...conditions);
 
-    const data = await db.query.posts.findMany({
-      where: whereClause,
-      orderBy: [desc(posts.created_at)],
-      limit: limit,
-      offset: offset,
-    });
+    // Create aliases for categories to join twice (for sub and main)
+    const cat = aliasedTable(categories, "cat");
+    const parentCat = aliasedTable(categories, "parentCat");
+
+    const data = await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        excerpt: posts.excerpt,
+        content: posts.content,
+        category: posts.category,
+        category_id: posts.category_id,
+        sub_category_id: posts.sub_category_id,
+        image_url: posts.image_url,
+        status: posts.status,
+        author_id: posts.author_id,
+        created_at: posts.created_at,
+        views: posts.views,
+        main_category: sql<string>`COALESCE(${parentCat.name}, ${cat.name}, ${posts.category}, 'گشتی')`,
+      })
+      .from(posts)
+      .leftJoin(cat, eq(posts.category_id, cat.id))
+      .leftJoin(parentCat, eq(cat.parent_id, parentCat.id))
+      .where(whereClause)
+      .orderBy(desc(posts.created_at))
+      .limit(limit)
+      .offset(offset);
 
     // Get total count for pagination
     const totalResult = await db.select({ value: count() }).from(posts).where(whereClause);

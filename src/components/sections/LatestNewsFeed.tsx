@@ -12,7 +12,7 @@ interface Article {
   created_at: string;
   views: number;
   image_url: string;
-  tags?: string[];
+  main_category: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -99,10 +99,10 @@ export default function LatestNewsFeed() {
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <a 
-                  href={categories[article.category] ? `/category/${categories[article.category]}` : '#'}
+                  href={categories[article.main_category] ? `/category/${categories[article.main_category]}` : '#'}
                   className="absolute top-6 right-6 bg-white/95 backdrop-blur-md text-[#563a4a] px-5 py-2 rounded-2xl text-xs font-black shadow-xl border border-white/50 hover:bg-[#c29181] hover:text-white transition-all z-10"
                 >
-                  {article.category || 'گشتی'}
+                  {article.main_category || 'گشتی'}
                 </a>
               </div>
             </div>

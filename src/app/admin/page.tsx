@@ -940,10 +940,11 @@ export default function AdminPage() {
                       <div className="w-16 h-16 bg-orange-50 rounded-[1.5rem] flex items-center justify-center text-orange-500 shadow-inner group-hover:scale-110 transition-transform">
                         <Eye size={32} />
                       </div>
-                      <div>
-                        <p className="text-[10px] text-neutral-400 font-black uppercase tracking-widest mb-1">سەردانەکان</p>
-                        <h3 className="text-4xl font-black text-neutral-800 tracking-tight">{stats.totalViews || '1,284'}</h3>
-                      </div>
+                        <div>
+                          <p className="text-[10px] text-neutral-400 font-black uppercase tracking-widest mb-1">سەردانەکان</p>
+                          <h3 className="text-4xl font-black text-neutral-800 tracking-tight">{stats.totalViews}</h3>
+                        </div>
+
                     </Card>
                   </div>
 
