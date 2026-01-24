@@ -100,7 +100,7 @@ export default function LatestNewsFeed() {
                 />
                 <a 
                   href={categories[article.main_category] ? `/category/${categories[article.main_category]}` : '#'}
-                  className="absolute top-6 right-6 bg-white/95 backdrop-blur-md text-[#563a4a] px-5 py-2 rounded-2xl text-xs font-black shadow-xl border border-white/50 hover:bg-[#c29181] hover:text-white transition-all z-10"
+                  className="absolute bottom-4 right-4 bg-[#563a4a]/90 backdrop-blur-md text-white px-4 py-1.5 rounded-xl text-[10px] font-black shadow-lg hover:bg-[#c29181] transition-all z-10"
                 >
                   {article.main_category || 'گشتی'}
                 </a>

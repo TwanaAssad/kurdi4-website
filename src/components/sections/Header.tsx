@@ -39,8 +39,8 @@ const Header = ({ settings }: { settings?: any }) => {
               <a href="/" className="block group">
                 <div className="relative">
                   <Image 
-                    src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain"
-                    alt="Kurdish Four Organization"
+                    src={settings?.logo_url || "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain"}
+                    alt={settings?.org_name || "Kurdish Four Organization"}
                     width={140}
                     height={140}
                     className="w-24 md:w-32 h-auto object-contain transition-transform group-hover:scale-105"
@@ -50,7 +50,7 @@ const Header = ({ settings }: { settings?: any }) => {
               </a>
               <div className="h-16 md:h-20 w-1 bg-[#563a4a]"></div>
               <div className="text-left">
-                <h1 className="text-2xl md:text-4xl font-black text-[#563a4a] leading-tight tracking-tight">رێكخراوی كوردی چوار</h1>
+                <h1 className="text-2xl md:text-4xl font-black text-[#563a4a] leading-tight tracking-tight">{settings?.org_name || "رێكخراوی كوردی چوار"}</h1>
                 <p className="text-lg text-gray-500 font-medium mt-1">بۆ زانست و پەروەردە</p>
               </div>
             </div>
@@ -65,7 +65,7 @@ const Header = ({ settings }: { settings?: any }) => {
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-4 px-8 pr-14 focus:outline-none focus:border-[#563a4a] focus:bg-white transition-all shadow-sm"
                 dir="rtl"
               />
-                <button type="submit" className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#563a4a] transition-colors bg-transparent border-none p-0">
+                <button type="submit" className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#563a4a] transition-colors bg-transparent border-none p-0 outline-none focus:outline-none shadow-none hover:bg-transparent">
                 <Search size={22} />
               </button>
             </form>
