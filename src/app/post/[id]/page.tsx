@@ -65,10 +65,10 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  const formattedDate = new Date(post.created_at).toLocaleDateString('ku-IQ', {
+  const formattedDate = new Date(post.created_at).toLocaleDateString('en-GB', {
     year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    month: '2-digit',
+    day: '2-digit'
   });
 
   return (
@@ -130,18 +130,8 @@ export default async function PostPage({ params }: PostPageProps) {
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
-              {/* Share Buttons */}
-              <div className="mt-16 pt-10 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                    <span className="font-black text-[#563a4a] ml-4">بڵاوکردنەوە:</span>
-                    <button className="w-12 h-12 rounded-2xl bg-[#1DA1F2]/10 text-[#1DA1F2] flex items-center justify-center hover:bg-[#1DA1F2] hover:text-white transition-all">
-                      <Twitter size={20} />
-                    </button>
-                    <button className="w-12 h-12 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-all">
-                      <Copy size={20} />
-                    </button>
-                  </div>
-                
+              {/* Tags Only */}
+              <div className="mt-16 pt-10 border-t border-gray-100 flex flex-col md:flex-row items-center justify-end gap-6">
                   <div className="flex flex-wrap gap-2">
                     {post.tags?.map((tag: string) => (
                       <span key={tag} className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-[#c29181]/10 hover:text-[#c29181] transition-colors cursor-default">#{tag}</span>
@@ -220,7 +210,7 @@ async function RelatedPosts({ currentId, category }: { currentId: number, catego
               </h3>
               <p className="text-gray-400 text-sm mt-auto pt-4 flex items-center gap-2">
                 <Calendar size={14} />
-                {new Date(article.created_at).toLocaleDateString('ku-IQ')}
+                {new Date(article.created_at).toLocaleDateString('en-GB')}
               </p>
             </div>
           </div>
