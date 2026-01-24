@@ -4,15 +4,15 @@ import MainNavigation from "@/components/sections/MainNavigation";
 import Footer from "@/components/sections/Footer";
 import Image from 'next/image';
 import { getSiteSettings } from "@/lib/settings";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db";
+import { pages } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 import { Target, Eye, Lightbulb } from 'lucide-react';
 
 async function getPageData() {
-  const { data } = await supabase
-    .from('pages')
-    .select('*')
-    .eq('slug', 'about')
-    .single();
+  const data = await db.query.pages.findFirst({
+    where: eq(pages.slug, 'about')
+  });
   return data;
 }
 

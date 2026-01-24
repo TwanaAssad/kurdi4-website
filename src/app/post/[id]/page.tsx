@@ -5,7 +5,9 @@ import MainNavigation from "@/components/sections/MainNavigation";
 import Footer from "@/components/sections/Footer";
 import SidebarWidgets from "@/components/sections/SidebarWidgets";
 import { getSiteSettings } from "@/lib/settings";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db";
+import { posts, categories, postTags, tags } from "@/lib/schema";
+import { eq, sql, and, neq } from "drizzle-orm";
 import { Eye, Calendar, User, Twitter, Copy } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
@@ -14,36 +16,44 @@ interface PostPageProps {
 }
 
 async function getPost(id: string) {
-  const { data, error } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const postId = parseInt(id);
+  if (isNaN(postId)) return null;
 
-  if (error || !data) return null;
+  const data = await db.query.posts.findFirst({
+    where: eq(posts.id, postId)
+  });
+
+  if (!data) return null;
 
   // Get category slug
-  const { data: catData } = await supabase
-    .from('categories')
-    .select('slug')
-    .eq('name', data.category)
-    .single();
+  let categorySlug = null;
+  if (data.category) {
+    const catData = await db.query.categories.findFirst({
+      where: eq(categories.name, data.category)
+    });
+    categorySlug = catData?.slug;
+  }
 
   // Get tags
-  const { data: tagData } = await supabase
-    .from('post_tags')
-    .select('tags(name)')
-    .eq('post_id', id);
+  const tagData = await db
+    .select({ name: tags.name })
+    .from(postTags)
+    .innerJoin(tags, eq(postTags.tag_id, tags.id))
+    .where(eq(postTags.post_id, postId));
 
-  const tags = tagData?.map((t: any) => t.tags.name) || [];
+  const postTagsList = tagData?.map((t: any) => t.name) || [];
 
   // Increment views
-  await supabase
-    .from('posts')
-    .update({ views: (data.views || 0) + 1 })
-    .eq('id', id);
+  try {
+    await db
+      .update(posts)
+      .set({ views: sql`${posts.views} + 1` })
+      .where(eq(posts.id, postId));
+  } catch (e) {
+    console.error("Failed to increment views:", e);
+  }
 
-  return { ...data, categorySlug: catData?.slug, tags };
+  return { ...data, categorySlug, tags: postTagsList };
 }
 
 export default async function PostPage({ params }: PostPageProps) {
@@ -157,21 +167,23 @@ export default async function PostPage({ params }: PostPageProps) {
   );
 }
 
-async function RelatedPosts({ currentId, category }: { currentId: string, category: string }) {
-  const { data: related } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('category', category)
-    .neq('id', currentId)
-    .limit(3);
+async function RelatedPosts({ currentId, category }: { currentId: number, category: string | null }) {
+  if (!category) return null;
+
+  const related = await db.query.posts.findMany({
+    where: and(
+      eq(posts.category, category),
+      neq(posts.id, currentId),
+      eq(posts.status, 'published')
+    ),
+    limit: 3
+  });
 
   if (!related || related.length === 0) return null;
 
-  const { data: catData } = await supabase
-    .from('categories')
-    .select('slug')
-    .eq('name', category)
-    .single();
+  const catData = await db.query.categories.findFirst({
+    where: eq(categories.name, category)
+  });
 
   const categorySlug = catData?.slug;
 

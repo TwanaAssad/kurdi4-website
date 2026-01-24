@@ -5,7 +5,9 @@ import Footer from "@/components/sections/Footer";
 import SidebarWidgets from "@/components/sections/SidebarWidgets";
 import CategoryPostsList from "@/components/sections/CategoryPostsList";
 import { getSiteSettings } from "@/lib/settings";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db";
+import { categories } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 import { notFound } from 'next/navigation';
 
 interface CategoryPageProps {
@@ -13,13 +15,11 @@ interface CategoryPageProps {
 }
 
 async function getCategory(slug: string) {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', slug)
-    .single();
+  const data = await db.query.categories.findFirst({
+    where: eq(categories.slug, slug)
+  });
 
-  if (error || !data) return null;
+  if (!data) return null;
   return data;
 }
 

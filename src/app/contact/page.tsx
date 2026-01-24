@@ -4,15 +4,15 @@ import MainNavigation from "@/components/sections/MainNavigation";
 import Footer from "@/components/sections/Footer";
 import ContactForm from "@/components/sections/ContactForm";
 import { getSiteSettings } from "@/lib/settings";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db";
+import { pages } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 async function getPageData() {
-  const { data } = await supabase
-    .from('pages')
-    .select('*')
-    .eq('slug', 'contact')
-    .single();
+  const data = await db.query.pages.findFirst({
+    where: eq(pages.slug, 'contact')
+  });
   return data;
 }
 
