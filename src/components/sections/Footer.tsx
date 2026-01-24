@@ -59,10 +59,9 @@ const Footer = ({ settings }: { settings?: any }) => {
             </div>
         </div>
 
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
-          <p>© {new Date().getFullYear()} {settings?.org_name || 'رێكخراوی كوردی چوار'}. هەموو مافەکان پارێزراون.</p>
-          <p>گەشەپێدراوە بۆ خزمەتکردنی زانست</p>
-        </div>
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
+            <p>© {new Date().getFullYear()} {settings?.org_name || 'رێكخراوی كوردی چوار'}. هەموو مافەکان پارێزراون.</p>
+          </div>
       </div>
       
       <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#c29181]/10 rounded-full blur-3xl"></div>
