@@ -155,7 +155,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </article>
 
           {/* Sidebar */}
-          <SidebarWidgets />
+          <SidebarWidgets settings={settings} />
         </div>
 
         {/* Related Posts Section */}

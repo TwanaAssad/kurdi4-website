@@ -53,9 +53,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <CategoryPostsList categoryName={category.name} />
           </div>
 
-          {/* Sidebar */}
-          <SidebarWidgets />
-        </div>
+            {/* Sidebar */}
+            <SidebarWidgets settings={settings} />
+          </div>
+
       </main>
 
       <Footer settings={settings} />

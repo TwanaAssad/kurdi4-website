@@ -14,11 +14,12 @@ export default async function Home() {
       <MainNavigation />
       <div className="container mx-auto py-10">
         <div className="flex flex-col lg:flex-row gap-8">
-          <main className="flex-1">
-            <LatestNewsFeed />
-          </main>
-          <SidebarWidgets />
-        </div>
+            <main className="flex-1">
+              <LatestNewsFeed />
+            </main>
+            <SidebarWidgets settings={settings} />
+          </div>
+
       </div>
       <Footer settings={settings} />
     </div>

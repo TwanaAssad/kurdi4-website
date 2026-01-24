@@ -67,7 +67,7 @@ export default async function WhoWeArePage() {
         </section>
       </main>
       
-      <Footer />
+      <Footer settings={settings} />
     </div>
   );
 }

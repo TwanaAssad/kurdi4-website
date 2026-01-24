@@ -4,6 +4,21 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 
+const TiktokIcon = ({ size = 20 }: { size?: number }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
+
   interface Post {
     id: string;
     title: string;
@@ -11,15 +26,16 @@ import { Facebook, Instagram, Youtube } from 'lucide-react';
     image_url: string;
   }
 
-  interface Category {
-    name: string;
-    slug: string;
-    count: number;
-  }
+    interface Category {
+      name: string;
+      slug: string;
+      count: number;
+    }
 
-  const SidebarWidgets = () => {
-    const [latestPosts, setLatestPosts] = useState<Post[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
+    const SidebarWidgets = ({ settings }: { settings?: any }) => {
+      const [latestPosts, setLatestPosts] = useState<Post[]>([]);
+      const [categories, setCategories] = useState<Category[]>([]);
+
 
     useEffect(() => {
       async function fetchData() {
@@ -106,9 +122,10 @@ import { Facebook, Instagram, Youtube } from 'lucide-react';
           <h2 className="text-xl font-black mb-4">پەیوەندیمان پێوە بکەن</h2>
           <p className="text-white/70 text-sm mb-6 leading-relaxed">فۆڵۆومان بکەن لە سۆشیال میدیا بۆ ئاگاداربوون لە دوایین چالاکی و بەرنامەکانمان.</p>
           <div className="flex gap-4 justify-end">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition-all"><Facebook size={18} /></div>
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition-all"><Instagram size={18} /></div>
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition-all"><Youtube size={18} /></div>
+            <a href={settings?.social_facebook || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-600 transition-all"><Facebook size={18} /></a>
+            <a href={settings?.social_tiktok || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-black transition-all"><TiktokIcon size={18} /></a>
+            <a href={settings?.social_instagram || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-pink-600 transition-all"><Instagram size={18} /></a>
+            <a href={settings?.social_youtube || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-600 transition-all"><Youtube size={18} /></a>
           </div>
         </div>
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-[#c29181]/20 rounded-full blur-3xl"></div>
