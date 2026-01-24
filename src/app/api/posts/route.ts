@@ -12,6 +12,10 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = page * limit;
 
+    // Create aliases for categories to join twice (for sub and main)
+    const cat = aliasedTable(categories, "cat");
+    const parentCat = aliasedTable(categories, "parentCat");
+
     let conditions = [eq(posts.status, "published")];
 
     if (categoryName) {
@@ -30,10 +34,6 @@ export async function GET(req: NextRequest) {
     }
 
     const whereClause = and(...conditions);
-
-    // Create aliases for categories to join twice (for sub and main)
-    const cat = aliasedTable(categories, "cat");
-    const parentCat = aliasedTable(categories, "parentCat");
 
     const data = await db
       .select({
@@ -60,7 +60,11 @@ export async function GET(req: NextRequest) {
       .offset(offset);
 
     // Get total count for pagination
-    const totalResult = await db.select({ value: count() }).from(posts).where(whereClause);
+    const totalResult = await db.select({ value: count() })
+      .from(posts)
+      .leftJoin(cat, eq(posts.category_id, cat.id))
+      .leftJoin(parentCat, eq(cat.parent_id, parentCat.id))
+      .where(whereClause);
     const total = totalResult[0].value;
 
     return NextResponse.json({
