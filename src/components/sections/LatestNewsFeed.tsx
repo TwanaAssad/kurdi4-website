@@ -98,12 +98,12 @@ export default function LatestNewsFeed() {
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <a 
-                  href={categories[article.main_category] ? `/category/${categories[article.main_category]}` : '#'}
-                  className="absolute bottom-4 right-4 bg-[#563a4a]/90 backdrop-blur-md text-white px-4 py-1.5 rounded-xl text-[10px] font-black shadow-lg hover:bg-[#c29181] transition-all z-10"
-                >
-                  {article.main_category || 'گشتی'}
-                </a>
+                  <a 
+                    href={categories[article.main_category] ? `/category/${categories[article.main_category]}` : '#'}
+                    className="absolute top-4 right-4 bg-white/95 backdrop-blur-md text-[#563a4a] px-4 py-1.5 rounded-xl text-[10px] font-black shadow-sm hover:bg-[#c29181] hover:text-white transition-all z-10 border border-gray-100/50"
+                  >
+                    {article.main_category || 'گشتی'}
+                  </a>
               </div>
             </div>
 

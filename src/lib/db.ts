@@ -8,6 +8,12 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not defined");
 }
 
-const poolConnection = mysql.createPool(connectionString);
+const globalForDb = globalThis as unknown as {
+  pool: mysql.Pool | undefined;
+};
 
-export const db = drizzle(poolConnection, { schema, mode: "default" });
+const pool = globalForDb.pool ?? mysql.createPool(connectionString);
+
+if (process.env.NODE_ENV !== "production") globalForDb.pool = pool;
+
+export const db = drizzle(pool, { schema, mode: "default" });

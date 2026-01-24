@@ -113,23 +113,15 @@ export default function AdminPage() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Stats for dashboard
-  const [stats, setStats] = useState<any>({
-    totalPosts: 0,
-    totalViews: 0,
-    totalUsers: 0,
-    totalCategories: 0,
-    recentActivity: [],
-    chartData: [
-      { name: 'شەممە', value: 400 },
-      { name: 'یەکشەممە', value: 300 },
-      { name: 'دووشەممە', value: 600 },
-      { name: 'سێشەممە', value: 800 },
-      { name: 'چوارشەممە', value: 500 },
-      { name: 'پێنجشەممە', value: 900 },
-      { name: 'هەینی', value: 700 },
-    ]
-  });
+    // Stats for dashboard
+    const [stats, setStats] = useState<any>({
+      totalPosts: 0,
+      totalViews: 0,
+      totalUsers: 0,
+      totalCategories: 0,
+      recentActivity: [],
+      chartData: []
+    });
 
   // Site Settings state
   const [settings, setSettings] = useState<any>({
