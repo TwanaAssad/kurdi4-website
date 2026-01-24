@@ -7,9 +7,11 @@ import SidebarWidgets from "@/components/sections/SidebarWidgets";
 import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { posts, categories, postTags, tags } from "@/lib/schema";
-import { eq, sql, and, ne } from "drizzle-orm";
+import { eq, sql, and, ne, aliasedTable } from "drizzle-orm";
 import { Eye, Calendar, User, Twitter, Copy } from 'lucide-react';
 import { notFound } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 
 interface PostPageProps {
   params: Promise<{ id: string }>;
@@ -19,20 +21,37 @@ async function getPost(id: string) {
   const postId = parseInt(id);
   if (isNaN(postId)) return null;
 
-  const data = await db.query.posts.findFirst({
-    where: eq(posts.id, postId)
-  });
+  // Create aliases for categories to join twice (for sub and main)
+  const cat = aliasedTable(categories, "cat");
+  const parentCat = aliasedTable(categories, "parentCat");
 
-  if (!data) return null;
+  const data = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      content: posts.content,
+      excerpt: posts.excerpt,
+      category: posts.category,
+      category_id: posts.category_id,
+      sub_category_id: posts.sub_category_id,
+      image_url: posts.image_url,
+      status: posts.status,
+      author_id: posts.author_id,
+      created_at: posts.created_at,
+      views: posts.views,
+      categoryName: sql<string>`COALESCE(${cat.name}, ${posts.category}, 'گشتی')`,
+      categorySlug: sql<string>`COALESCE(${cat.slug}, 'general')`,
+      mainCategoryName: sql<string>`COALESCE(${parentCat.name}, ${cat.name}, ${posts.category}, 'گشتی')`,
+    })
+    .from(posts)
+    .leftJoin(cat, eq(posts.category_id, cat.id))
+    .leftJoin(parentCat, eq(cat.parent_id, parentCat.id))
+    .where(eq(posts.id, postId))
+    .limit(1);
 
-  // Get category slug
-  let categorySlug = null;
-  if (data.category) {
-    const catData = await db.query.categories.findFirst({
-      where: eq(categories.name, data.category)
-    });
-    categorySlug = catData?.slug;
-  }
+  if (!data || data.length === 0) return null;
+
+  const post = data[0];
 
   // Get tags
   const tagData = await db
@@ -47,13 +66,13 @@ async function getPost(id: string) {
   try {
     await db
       .update(posts)
-      .set({ views: sql`${posts.views} + 1` })
+      .set({ views: sql`COALESCE(${posts.views}, 0) + 1` })
       .where(eq(posts.id, postId));
   } catch (e) {
     console.error("Failed to increment views:", e);
   }
 
-  return { ...data, categorySlug, tags: postTagsList };
+  return { ...post, tags: postTagsList };
 }
 
 export default async function PostPage({ params }: PostPageProps) {
@@ -95,7 +114,7 @@ export default async function PostPage({ params }: PostPageProps) {
                     href={post.categorySlug ? `/category/${post.categorySlug}` : '#'}
                     className="bg-[#c29181] px-6 py-2 rounded-2xl text-xs font-black shadow-lg mb-4 inline-block hover:bg-[#563a4a] transition-all"
                   >
-                    {post.category || 'گشتی'}
+                    {post.categoryName}
                   </a>
                   <h1 className="text-3xl md:text-5xl font-black leading-tight drop-shadow-md">
                     {post.title}
@@ -111,7 +130,7 @@ export default async function PostPage({ params }: PostPageProps) {
               </div>
               <div className="flex items-center gap-3 text-gray-500 font-bold text-sm">
                 <Eye size={18} className="text-[#c29181]" />
-                <span>{post.views || 0} بینین</span>
+                <span>{(post.views || 0) + 1} بینین</span>
               </div>
               <div className="flex items-center gap-3 text-gray-500 font-bold text-sm">
                 <User size={18} className="text-[#c29181]" />

@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
     let conditions = [eq(posts.status, "published")];
 
     if (categoryName) {
-      conditions.push(eq(posts.category, categoryName));
+      conditions.push(or(
+        eq(posts.category, categoryName),
+        eq(cat.name, categoryName),
+        eq(parentCat.name, categoryName)
+      ) as any);
     }
 
     if (search) {
