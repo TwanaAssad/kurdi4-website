@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Share2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { FileText, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -148,7 +148,7 @@ export default function LatestNewsFeed() {
         {articles.length === 0 && !loading && (
             <div className="text-center py-32 bg-white rounded-[3rem] border-4 border-dashed border-gray-50">
               <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-200">
-                <Share2 size={40} />
+                <FileText size={40} />
               </div>
               <p className="text-gray-400 font-bold text-lg tracking-wide">هیچ بابەتێک نایاب نەکراوە</p>
             </div>

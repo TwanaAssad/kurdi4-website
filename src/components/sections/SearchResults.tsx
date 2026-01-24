@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
-import { Share2, Facebook, Linkedin, ChevronRight, ChevronLeft, Calendar, Eye, Search } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Eye, Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -55,24 +55,10 @@ function SearchResultsContent() {
     fetchPosts();
   }, [page, query]);
 
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+  
+    if (loading && articles.length === 0) {
 
-  const handleShare = (platform: string, article: Article) => {
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/post/${article.id}` : '';
-    let shareUrl = '';
-    
-    if (platform === 'facebook') {
-      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-    } else if (platform === 'linkedin') {
-      shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-    }
-    
-    if (shareUrl) {
-      window.open(shareUrl, '_blank', 'width=600,height=400');
-    }
-  };
-
-  if (loading && articles.length === 0) {
     return (
       <div className="p-20 text-center bg-white rounded-[3rem] shadow-sm border border-gray-100">
         <div className="w-12 h-12 border-4 border-[#c29181] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -150,30 +136,16 @@ function SearchResultsContent() {
                 {article.excerpt}
               </p>
               
-              <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-6">
-                <a 
-                  href={`/post/${article.id}`}
-                  className="text-[#563a4a] hover:text-[#c29181] text-xs font-black flex items-center gap-2 group/btn"
-                >
-                  <span>زیاتر بخوێنەرەوە</span>
-                  <ChevronLeft size={14} className="group-hover/btn:-translate-x-1 transition-transform" />
-                </a>
-
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => handleShare('facebook', article)}
-                    className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#1877F2] hover:text-white transition-all"
+                <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-6">
+                  <a 
+                    href={`/post/${article.id}`}
+                    className="text-[#563a4a] hover:text-[#c29181] text-xs font-black flex items-center gap-2 group/btn"
                   >
-                    <Facebook size={14} />
-                  </button>
-                    <button 
-                      onClick={() => handleShare('linkedin', article)}
-                      className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#0077B5] hover:text-white transition-all"
-                    >
-                      <Linkedin size={14} />
-                    </button>
+                    <span>زیاتر بخوێنەرەوە</span>
+                    <ChevronLeft size={14} className="group-hover/btn:-translate-x-1 transition-transform" />
+                  </a>
                 </div>
-              </div>
+
             </div>
           </div>
         ))}

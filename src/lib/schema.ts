@@ -24,6 +24,7 @@ export const categories = mysqlTable("categories", {
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   parent_id: int("parent_id"),
+  created_by: varchar("created_by", { length: 255 }),
 });
 
 export const posts = mysqlTable("posts", {
@@ -45,6 +46,7 @@ export const tags = mysqlTable("tags", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
+  created_by: varchar("created_by", { length: 255 }),
 });
 
 export const postTags = mysqlTable("post_tags", {
@@ -70,6 +72,7 @@ export const menuItems = mysqlTable("menu_items", {
   url: text("url"),
   sort_order: int("sort_order").default(0),
   parent_id: int("parent_id"),
+  created_by: varchar("created_by", { length: 255 }),
 });
 
 export const pages = mysqlTable("pages", {
@@ -87,3 +90,10 @@ export const pages = mysqlTable("pages", {
   author_id: varchar("author_id", { length: 255 }),
   created_at: timestamp("created_at").defaultNow(),
 });
+
+export const siteVisits = mysqlTable("site_visits", {
+  id: int("id").autoincrement().primaryKey(),
+  visit_date: timestamp("visit_date").notNull(),
+  count: int("count").default(0),
+});
+

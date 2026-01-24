@@ -1,7 +1,11 @@
 "use server";
 
 import { db } from "./db";
-import { 
+import * as schema from "./schema";
+import { eq, desc, and, count, sql, or, like, gte, lte } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
+const { 
   posts, 
   categories, 
   tags, 
@@ -9,10 +13,9 @@ import {
   menuItems, 
   pages, 
   profiles, 
-  siteSettings 
-} from "./schema";
-import { eq, desc, and, count, sql, or, like, gte, lte } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+  siteSettings,
+  siteVisits
+} = schema;
 
 // --- Helper for data cleanup ---
 function cleanData(data: any, numericFields: string[] = [], ignoreFields: string[] = ["id"]) {
@@ -309,40 +312,28 @@ export async function getStatsAction() {
   const postCount = await db.select({ value: count() }).from(posts);
   const catCount = await db.select({ value: count() }).from(categories);
   const userCount = await db.select({ value: count() }).from(profiles);
-  const viewCount = await db.select({ value: sql<number>`sum(${posts.views})` }).from(posts);
+  const postViewCount = await db.select({ value: sql<number>`sum(${posts.views})` }).from(posts);
+  const totalSiteVisitCount = await db.select({ value: sql<number>`sum(${siteVisits.count})` }).from(siteVisits);
   
   const recentPosts = await db.query.posts.findMany({
     orderBy: [desc(posts.created_at)],
     limit: 5,
   });
 
-  // Generate real data for the last 7 days based on post creation
+  // Generate real data for the last 7 days from siteVisits table
   const days = ['هەینی', 'پێنجشەممە', 'چوارشەممە', 'سێشەممە', 'دووشەممە', 'یەکشەممە', 'شەممە'].reverse();
   const chartData = await Promise.all(days.map(async (day, index) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - index));
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
     
-    // Format dates for MySQL
-    const startStr = startOfDay.toISOString().slice(0, 19).replace('T', ' ');
-    const endStr = endOfDay.toISOString().slice(0, 19).replace('T', ' ');
-    
-    const dayCount = await db.select({ value: count() })
-      .from(posts)
-      .where(and(
-        gte(posts.created_at, startOfDay),
-        lte(posts.created_at, endOfDay)
-      ));
-      
-    // If we have very few posts, we can add some random factor based on views 
-    // to make the "Visiting" graph look more realistic as requested
-    const baseline = dayCount[0].value * 10;
-    const viewsFactor = Math.floor(Math.random() * 50);
+    const visitRecord = await db.query.siteVisits.findFirst({
+      where: eq(siteVisits.visit_date, startOfDay)
+    });
     
     return {
       name: day,
-      value: (baseline > 0 ? baseline + viewsFactor : 10 + viewsFactor) + (viewCount[0].value || 0) / 100
+      value: visitRecord?.count || 0
     };
   }));
 
@@ -350,8 +341,37 @@ export async function getStatsAction() {
     totalPosts: postCount[0].value,
     totalCategories: catCount[0].value,
     totalUsers: userCount[0].value,
-    totalViews: viewCount[0].value || 0,
+    totalViews: totalSiteVisitCount[0].value || 0,
+    postViews: postViewCount[0].value || 0,
     recentActivity: recentPosts,
     chartData: chartData
   };
+}
+
+export async function trackVisitAction() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Try to find today's record
+  const existing = await db.query.siteVisits.findFirst({
+    where: eq(siteVisits.visit_date, today)
+  });
+
+  if (existing) {
+    await db.update(siteVisits)
+      .set({ count: sql`${siteVisits.count} + 1` })
+      .where(eq(siteVisits.id, existing.id));
+  } else {
+    try {
+      await db.insert(siteVisits).values({
+        visit_date: today,
+        count: 1
+      });
+    } catch (e) {
+      // In case of race condition
+      await db.update(siteVisits)
+        .set({ count: sql`${siteVisits.count} + 1` })
+        .where(eq(siteVisits.visit_date, today));
+    }
+  }
 }

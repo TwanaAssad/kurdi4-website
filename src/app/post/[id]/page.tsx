@@ -8,7 +8,7 @@ import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { posts, categories, postTags, tags } from "@/lib/schema";
 import { eq, sql, and, ne, aliasedTable } from "drizzle-orm";
-import { Eye, Calendar, User, Twitter, Copy } from 'lucide-react';
+import { Eye, Calendar, User } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';

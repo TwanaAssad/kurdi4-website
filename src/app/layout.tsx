@@ -5,6 +5,7 @@ import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { getSiteSettings } from "@/lib/settings";
+import { trackVisitAction } from "@/lib/actions";
 
 export const metadata: Metadata = {
   title: "رێكخراوی كوردی چوار بۆ زانست و پەروەردە",
@@ -17,6 +18,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const settings = await getSiteSettings();
+  
+  // Track site visit
+  try {
+    await trackVisitAction();
+  } catch (e) {
+    console.error("Failed to track visit:", e);
+  }
   
   // Only show Kurdish if English is not available
   const isKurdishOnly = !settings.available_languages?.includes('en');
