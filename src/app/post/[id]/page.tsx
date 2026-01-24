@@ -7,7 +7,7 @@ import SidebarWidgets from "@/components/sections/SidebarWidgets";
 import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { posts, categories, postTags, tags } from "@/lib/schema";
-import { eq, sql, and, neq } from "drizzle-orm";
+import { eq, sql, and, ne } from "drizzle-orm";
 import { Eye, Calendar, User, Twitter, Copy } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
@@ -173,7 +173,7 @@ async function RelatedPosts({ currentId, category }: { currentId: number, catego
   const related = await db.query.posts.findMany({
     where: and(
       eq(posts.category, category),
-      neq(posts.id, currentId),
+      ne(posts.id, currentId),
       eq(posts.status, 'published')
     ),
     limit: 3
