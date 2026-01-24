@@ -23,13 +23,12 @@ const TiktokIcon = ({ size = 20 }: { size?: number }) => (
  * Uses the light theme as specified.
  */
 const Header = ({ settings }: { settings?: any }) => {
-  const socialLinks = [
-    { icon: <Facebook size={20} />, url: settings?.social_facebook, color: 'hover:bg-blue-600' },
-    { icon: <TiktokIcon size={20} />, url: settings?.social_tiktok, color: 'hover:bg-black' },
-    { icon: <Instagram size={20} />, url: settings?.social_instagram, color: 'hover:bg-pink-600' },
-    { icon: <Linkedin size={20} />, url: settings?.social_linkedin, color: 'hover:bg-blue-700' },
-    { icon: <Youtube size={20} />, url: settings?.social_youtube, color: 'hover:bg-red-600' },
-  ].filter(link => link.url);
+    const socialLinks = [
+      { icon: <Facebook size={20} />, url: settings?.social_facebook, color: 'hover:bg-blue-600' },
+      { icon: <TiktokIcon size={20} />, url: settings?.social_tiktok, color: 'hover:bg-black' },
+      { icon: <Instagram size={20} />, url: settings?.social_instagram, color: 'hover:bg-pink-600' },
+      { icon: <Youtube size={20} />, url: settings?.social_youtube, color: 'hover:bg-red-600' },
+    ].filter(link => link.url);
 
   return (
     <header id="theme-header" className="w-full bg-white">
@@ -85,12 +84,12 @@ const Header = ({ settings }: { settings?: any }) => {
               ))
             ) : (
                 // Default icons if none set
-                <>
-                  <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-[#563a4a] hover:text-white transition-all shadow-sm hover:shadow-md"><Facebook size={20} /></a>
-                  <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-black hover:text-white transition-all shadow-sm hover:shadow-md"><TiktokIcon size={20} /></a>
-                  <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-[#563a4a] hover:text-white transition-all shadow-sm hover:shadow-md"><Youtube size={20} /></a>
-                  <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-[#563a4a] hover:text-white transition-all shadow-sm hover:shadow-md"><Instagram size={20} /></a>
-                </>
+                  <>
+                    <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-blue-600 hover:text-white transition-all shadow-sm hover:shadow-md"><Facebook size={20} /></a>
+                    <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-black hover:text-white transition-all shadow-sm hover:shadow-md"><TiktokIcon size={20} /></a>
+                    <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-pink-600 hover:text-white transition-all shadow-sm hover:shadow-md"><Instagram size={20} /></a>
+                    <a href="#" className="w-12 h-12 rounded-2xl bg-[#fdf8f6] flex items-center justify-center text-[#563a4a] hover:bg-red-600 hover:text-white transition-all shadow-sm hover:shadow-md"><Youtube size={20} /></a>
+                  </>
               )}
           </div>
         </div>
