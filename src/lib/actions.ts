@@ -304,9 +304,7 @@ export async function deleteProfileAction(id: string) {
 // --- Site Settings ---
 export async function getSiteSettingsAction() {
   try {
-    const data = await db.query.siteSettings.findFirst({
-      where: eq(siteSettings.id, 1),
-    });
+    const data = await db.query.siteSettings.findFirst();
     return data;
   } catch (error) {
     console.error("Failed to fetch site settings:", error);
@@ -315,10 +313,53 @@ export async function getSiteSettingsAction() {
 }
 
 export async function updateSiteSettingsAction(data: any) {
-  const settingsData = cleanData(data, ["id"]);
-  await db.update(siteSettings).set(settingsData).where(eq(siteSettings.id, 1));
-  revalidatePath("/admin");
-  return { success: true };
+  try {
+    // Use raw SQL to ensure the update actually persists
+    const orgName = data.org_name || null;
+    const logoUrl = data.logo_url || null;
+    const primaryColor = data.primary_color || '#563a4a';
+    const secondaryColor = data.secondary_color || '#c29181';
+    const accentColor = data.accent_color || '#f0ecee';
+    const socialFacebook = data.social_facebook || null;
+    const socialTiktok = data.social_tiktok || null;
+    const socialInstagram = data.social_instagram || null;
+    const socialLinkedin = data.social_linkedin || null;
+    const socialYoutube = data.social_youtube || null;
+    const contactPhone = data.contact_phone || null;
+    const contactEmail = data.contact_email || null;
+    const contactLocation = data.contact_location || null;
+    const defaultLanguage = data.default_language || 'ku';
+    const availableLanguages = Array.isArray(data.available_languages) 
+      ? JSON.stringify(data.available_languages) 
+      : '["ku"]';
+
+    await db.execute(sql`
+      UPDATE site_settings SET
+        org_name = ${orgName},
+        logo_url = ${logoUrl},
+        primary_color = ${primaryColor},
+        secondary_color = ${secondaryColor},
+        accent_color = ${accentColor},
+        social_facebook = ${socialFacebook},
+        social_tiktok = ${socialTiktok},
+        social_instagram = ${socialInstagram},
+        social_linkedin = ${socialLinkedin},
+        social_youtube = ${socialYoutube},
+        contact_phone = ${contactPhone},
+        contact_email = ${contactEmail},
+        contact_location = ${contactLocation},
+        default_language = ${defaultLanguage},
+        available_languages = ${availableLanguages}
+      WHERE id = (SELECT min_id FROM (SELECT MIN(id) as min_id FROM site_settings) as t)
+    `);
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update settings:", error);
+    return { success: false };
+  }
 }
 
 // --- Stats ---

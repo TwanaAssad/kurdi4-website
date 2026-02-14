@@ -1,0 +1,43 @@
+2026-02-14T19:44:57.611Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <OuterLayoutRouter parallelRouterKey="children" template={<RenderFromTemplateContext>}>
+      <RenderFromTemplateContext>
+        <ScrollAndFocusHandler segmentPath={[...]}>
+          <InnerScrollAndFocusHandler segmentPath={[...]} focusAndScrollRef={{apply:false, ...}}>
+            <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+              <LoadingBoundary loading={null}>
+                <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+                  <RedirectBoundary>
+                    <RedirectErrorBoundary router={{...}}>
+                      <InnerLayoutRouter url="/about" tree={[...]} cacheNode={{lazyData:null, ...}} segmentPath={[...]}>
+                        <AboutPage>
+                          <div
+                            data-orchids-id="src\app\about\page.tsx:24:4"
+                            data-orchids-name="div"
+                            className="min-h-screen bg-white"
+                            dir="rtl"
+-                           data-orchid-ref="ref-yk9fbdd5gk"
+                          >
+                            <Header>
+                              <header
+                                data-orchids-id="src\components\sections\Header.tsx:34:4"
+             ...
+2026-02-14T19:51:24.691Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-02-14T19:51:49.751Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-02-14T19:51:56.977Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-02-14T19:56:50.332Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-02-14T19:56:53.586Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-02-14T19:58:19.751Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-02-14T20:42:38.223Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-02-14T20:42:41.455Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.

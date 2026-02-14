@@ -1,12 +1,9 @@
 import { db } from './db';
 import { siteSettings } from './schema';
-import { eq } from 'drizzle-orm';
 
 export async function getSiteSettings() {
   try {
-    const data = await db.query.siteSettings.findFirst({
-      where: eq(siteSettings.id, 1),
-    });
+    const data = await db.query.siteSettings.findFirst();
     
     if (!data) {
       return {

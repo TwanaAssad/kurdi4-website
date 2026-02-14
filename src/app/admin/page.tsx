@@ -476,14 +476,15 @@ export default function AdminPage() {
           card3_title: item.card3_title || '',
           card3_content: item.card3_content || ''
         });
-    } else if (activeTab === 'users') {
-      setFormData({
-        full_name: item.full_name,
-        role: item.role,
-        avatar_url: item.avatar_url,
-        email: item.email,
-        status: item.status || 'active'
-      });
+      } else if (activeTab === 'users') {
+        setFormData({
+          full_name: item.full_name,
+          role: item.role,
+          avatar_url: item.avatar_url,
+          email: item.email,
+          status: item.status || 'active',
+          userPassword: ''
+        });
     }
     setViewMode('form');
   };
@@ -542,13 +543,25 @@ export default function AdminPage() {
                 card3_content: formData.card3_content
               });
 
-        } else if (activeTab === 'users') {
-          result = await actions.updateProfileAction(editingId.toString(), {
-            full_name: formData.full_name,
-            role: formData.role,
-            avatar_url: formData.avatar_url,
-            status: formData.status
-          });
+          } else if (activeTab === 'users') {
+            // If password is provided, update it via Supabase Admin API
+            if (formData.userPassword) {
+              const response = await fetch('/api/admin/update-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: editingId, password: formData.userPassword })
+              });
+              const pwResult = await response.json();
+              if (pwResult.error) {
+                toast.error('هەڵە لە گۆڕینی وشەی تێپەڕ: ' + pwResult.error);
+              }
+            }
+            result = await actions.updateProfileAction(editingId.toString(), {
+              full_name: formData.full_name,
+              role: formData.role,
+              avatar_url: formData.avatar_url,
+              status: formData.status
+            });
         }
       } else {
         if (activeTab === 'posts') {
@@ -2006,24 +2019,22 @@ export default function AdminPage() {
                                 <p className="text-[10px] font-black text-neutral-400 mt-6 uppercase tracking-[0.3em]">وێنەی کەسی</p>
                              </div>
                              <div className="md:col-span-8 space-y-10">
-                                {!editingId && (
-                                  <>
-                                    <div className="space-y-4">
-                                       <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">ئیمەیڵ</Label>
-                                       <div className="relative">
-                                         <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                                         <Input type="email" value={formData.userEmail} onChange={(e) => setFormData((p: any) => ({...p, userEmail: e.target.value}))} required className="rounded-2xl h-16 border-neutral-100 bg-neutral-50 pr-12 pl-8 text-xl font-black shadow-sm ltr" placeholder="user@example.com" />
-                                       </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                       <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">وشەی تێپەڕ</Label>
-                                       <div className="relative">
-                                         <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                                         <Input type="password" value={formData.userPassword} onChange={(e) => setFormData((p: any) => ({...p, userPassword: e.target.value}))} required className="rounded-2xl h-16 border-neutral-100 bg-neutral-50 pr-12 pl-8 text-xl font-black shadow-sm ltr" placeholder="••••••••" />
-                                       </div>
-                                    </div>
-                                  </>
-                                )}
+                              <div className="space-y-4">
+                                   <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">ئیمەیڵ</Label>
+                                   <div className="relative">
+                                     <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                                     <Input type="email" value={editingId ? (formData.email || '') : formData.userEmail} onChange={(e) => setFormData((p: any) => editingId ? ({...p, email: e.target.value}) : ({...p, userEmail: e.target.value}))} required={!editingId} disabled={!!editingId} className={`rounded-2xl h-16 border-neutral-100 bg-neutral-50 pr-12 pl-8 text-xl font-black shadow-sm ltr ${editingId ? 'opacity-60 cursor-not-allowed' : ''}`} placeholder="user@example.com" />
+                                   </div>
+                                   {editingId && <p className="text-[10px] text-neutral-400 font-bold mr-4">ئیمەیڵ ناتوانرێت بگۆڕدرێت</p>}
+                                </div>
+                                <div className="space-y-4">
+                                   <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">{editingId ? 'وشەی تێپەڕی نوێ (ئارەزوومەندانە)' : 'وشەی تێپەڕ'}</Label>
+                                   <div className="relative">
+                                     <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                                     <Input type="password" value={formData.userPassword} onChange={(e) => setFormData((p: any) => ({...p, userPassword: e.target.value}))} required={!editingId} className="rounded-2xl h-16 border-neutral-100 bg-neutral-50 pr-12 pl-8 text-xl font-black shadow-sm ltr" placeholder={editingId ? "بۆ گۆڕینی وشەی تێپەڕ بینووسە..." : "••••••••"} />
+                                   </div>
+                                   {editingId && <p className="text-[10px] text-neutral-400 font-bold mr-4">بەتاڵی بهێڵەرەوە ئەگەر ناتەوێت بیگۆڕیت</p>}
+                                </div>
                                 <div className="space-y-4">
                                    <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">ناوی تەواو</Label>
                                    <Input value={formData.full_name} onChange={(e) => setFormData((p: any) => ({...p, full_name: e.target.value}))} className="rounded-2xl h-16 border-neutral-100 bg-neutral-50 px-8 text-xl font-black shadow-sm" />

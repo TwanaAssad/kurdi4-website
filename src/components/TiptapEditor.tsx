@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -27,7 +27,8 @@ import {
   Heading3,
   Type,
   Code,
-  Video
+  Video,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -38,6 +39,8 @@ interface TiptapEditorProps {
 }
 
 export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە بە نووسین...' }: TiptapEditorProps) {
+  const [hasSelectedNode, setHasSelectedNode] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -45,7 +48,10 @@ export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە
       Link.configure({
         openOnClick: false,
       }),
-        Image,
+        Image.configure({
+          inline: false,
+          allowBase64: true,
+        }),
         Youtube.configure({
           controls: true,
           nocookie: true,
@@ -61,6 +67,10 @@ export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە
     content: content,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+    },
+    onSelectionUpdate: ({ editor }) => {
+      const { node } = editor.state.selection as any;
+      setHasSelectedNode(node?.type?.name === 'image' || node?.type?.name === 'youtube');
     },
     editorProps: {
       attributes: {
@@ -104,6 +114,16 @@ export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە
       const url = window.prompt('بەستەری ڤیدیۆی یوتوب بنووسە:');
       if (url) {
         editor.commands.setYoutubeVideo({ src: url });
+      }
+    };
+
+    const deleteSelectedNode = () => {
+      if (!editor) return;
+      const { selection } = editor.state;
+      const { node } = selection as any;
+      if (node) {
+        editor.chain().focus().deleteSelection().run();
+        setHasSelectedNode(false);
       }
     };
 
@@ -248,16 +268,29 @@ export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە
           >
             <ImageIcon size={18} />
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={addVideo}
-            className="h-10 w-10 rounded-xl transition-all text-neutral-400 hover:bg-red-50 hover:text-red-600"
-            title="ڤیدیۆی یوتوب"
-          >
-            <Video size={18} />
-          </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={addVideo}
+              className="h-10 w-10 rounded-xl transition-all text-neutral-400 hover:bg-red-50 hover:text-red-600"
+              title="ڤیدیۆی یوتوب"
+            >
+              <Video size={18} />
+            </Button>
+
+          {hasSelectedNode && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={deleteSelectedNode}
+              className="h-10 w-10 rounded-xl transition-all bg-red-50 text-red-600 hover:bg-red-500 hover:text-white animate-in fade-in duration-200"
+              title="سڕینەوەی وێنە/ڤیدیۆ"
+            >
+              <Trash2 size={18} />
+            </Button>
+          )}
 
         <div className="mr-auto flex items-center gap-1">
           <Button
