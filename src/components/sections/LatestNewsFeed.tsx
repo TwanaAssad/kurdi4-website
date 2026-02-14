@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { FileText, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface Article {
@@ -92,12 +91,11 @@ export default function LatestNewsFeed() {
             {/* Thumbnail Area */}
             <div className="md:w-80 lg:w-96 w-full flex-shrink-0 relative overflow-hidden h-72 md:h-auto">
               <div className="w-full h-full relative">
-                <Image
-                  src={article.image_url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070&auto=format&fit=crop"}
-                  alt={article.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+                  <img
+                    src={article.image_url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070&auto=format&fit=crop"}
+                    alt={article.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 absolute inset-0"
+                  />
                   <a 
                     href={categories[article.main_category] ? `/category/${categories[article.main_category]}` : '#'}
                     className="absolute top-4 right-4 bg-white/95 backdrop-blur-md text-[#563a4a] px-4 py-1.5 rounded-xl text-[10px] font-black shadow-sm hover:bg-[#c29181] hover:text-white transition-all z-10 border border-gray-100/50"

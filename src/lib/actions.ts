@@ -281,6 +281,20 @@ export async function updateProfileAction(id: string, data: any) {
   return { success: true };
 }
 
+export async function createProfileAction(data: any) {
+  const profileData = {
+    id: data.id,
+    email: data.email,
+    full_name: data.full_name || null,
+    role: data.role || 'user',
+    avatar_url: data.avatar_url || null,
+    status: data.status || 'active',
+  };
+  await db.insert(profiles).values(profileData);
+  revalidatePath("/admin");
+  return { success: true };
+}
+
 export async function deleteProfileAction(id: string) {
   await db.delete(profiles).where(eq(profiles.id, id));
   revalidatePath("/admin");

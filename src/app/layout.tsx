@@ -26,38 +26,43 @@ export default async function RootLayout({
     console.error("Failed to track visit:", e);
   }
   
-  // Only show Kurdish if English is not available
-  const isKurdishOnly = !settings.available_languages?.includes('en');
-  const lang = isKurdishOnly ? 'ku' : 'en'; // Default to English if available, or stay on Kurdish
-  const dir = lang === 'ku' ? 'rtl' : 'ltr';
+    // Only show Kurdish if English is not available
+    const isKurdishOnly = !settings?.available_languages?.includes('en');
+    const lang = isKurdishOnly ? 'ku' : 'en';
+    const dir = lang === 'ku' ? 'rtl' : 'ltr';
 
     return (
       <html lang={lang} dir={dir}>
         <head>
-          {settings.logo_url && <link rel="icon" href={settings.logo_url} />}
+          {settings?.logo_url && (
+            <>
+              <link rel="icon" href={settings.logo_url} type="image/png" />
+              <link rel="apple-touch-icon" href={settings.logo_url} />
+            </>
+          )}
           <style dangerouslySetInnerHTML={{ __html: `
           :root {
-            --primary: ${settings.primary_color};
-            --secondary: ${settings.secondary_color};
-            --accent: ${settings.accent_color};
+            --primary: ${settings?.primary_color || '#563a4a'};
+            --secondary: ${settings?.secondary_color || '#c29181'};
+            --accent: ${settings?.accent_color || '#f0ecee'};
           }
           #theme-header h1, #theme-header p, #theme-header a, #theme-header input {
-            color: ${settings.primary_color} !important;
+            color: ${settings?.primary_color || '#563a4a'} !important;
           }
           #theme-header .border-l-4 {
-            border-color: ${settings.primary_color} !important;
+            border-color: ${settings?.primary_color || '#563a4a'} !important;
           }
           button, .bg-\\[\\#563a4a\\] {
-            background-color: ${settings.primary_color} !important;
+            background-color: ${settings?.primary_color || '#563a4a'} !important;
           }
           .text-\\[\\#563a4a\\] {
-            color: ${settings.primary_color} !important;
+            color: ${settings?.primary_color || '#563a4a'} !important;
           }
           .border-\\[\\#563a4a\\] {
-            border-color: ${settings.primary_color} !important;
+            border-color: ${settings?.primary_color || '#563a4a'} !important;
           }
           .bg-\\[\\#fdf8f6\\], .bg-\\[\\#f0ecee\\] {
-            background-color: ${settings.accent_color} !important;
+            background-color: ${settings?.accent_color || '#f0ecee'} !important;
           }
         `}} />
       </head>

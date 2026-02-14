@@ -238,7 +238,27 @@
     transition: opacity 0.3s ease;
   }
 
-  .image-hover-effect:hover img {
-    opacity: 0.85;
+    .image-hover-effect:hover img {
+      opacity: 0.85;
+    }
   }
+
+/* YouTube embed responsive styles */
+.prose iframe,
+.ProseMirror iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 1rem;
+  margin: 1.5rem 0;
+}
+
+div[data-youtube-video] {
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+div[data-youtube-video] iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 1rem;
 }

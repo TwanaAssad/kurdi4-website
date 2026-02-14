@@ -8,6 +8,7 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
+import Youtube from '@tiptap/extension-youtube';
 import { 
   Bold, 
   Italic, 
@@ -25,7 +26,8 @@ import {
   Heading2,
   Heading3,
   Type,
-  Code
+  Code,
+  Video
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -43,8 +45,13 @@ export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە
       Link.configure({
         openOnClick: false,
       }),
-      Image,
-      TextAlign.configure({
+        Image,
+        Youtube.configure({
+          controls: true,
+          nocookie: true,
+          modestBranding: true,
+        }),
+        TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
       Placeholder.configure({
@@ -86,12 +93,19 @@ export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە
     }
   };
 
-  const setLink = () => {
-    const url = window.prompt('بەستەرەکە بنووسە:');
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
-  };
+    const setLink = () => {
+      const url = window.prompt('بەستەرەکە بنووسە:');
+      if (url) {
+        editor.chain().focus().setLink({ href: url }).run();
+      }
+    };
+
+    const addVideo = () => {
+      const url = window.prompt('بەستەری ڤیدیۆی یوتوب بنووسە:');
+      if (url) {
+        editor.commands.setYoutubeVideo({ src: url });
+      }
+    };
 
   return (
     <div className="border border-neutral-100 rounded-[2.5rem] overflow-hidden shadow-sm bg-neutral-50 p-1">
@@ -225,15 +239,25 @@ export function TiptapEditor({ content, onChange, placeholder = 'دەست بکە
         >
           <LinkIcon size={18} />
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={addImage}
-          className="h-10 w-10 rounded-xl transition-all text-neutral-400 hover:bg-rose-50 hover:text-rose-600"
-        >
-          <ImageIcon size={18} />
-        </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={addImage}
+            className="h-10 w-10 rounded-xl transition-all text-neutral-400 hover:bg-rose-50 hover:text-rose-600"
+          >
+            <ImageIcon size={18} />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={addVideo}
+            className="h-10 w-10 rounded-xl transition-all text-neutral-400 hover:bg-red-50 hover:text-red-600"
+            title="ڤیدیۆی یوتوب"
+          >
+            <Video size={18} />
+          </Button>
 
         <div className="mr-auto flex items-center gap-1">
           <Button

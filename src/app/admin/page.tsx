@@ -155,37 +155,39 @@ export default function AdminPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
 
-  // Form states
-  const [formData, setFormData] = useState<any>({
-    title: '',
-    content: '',
-    excerpt: '',
-    category: '',
-    image_url: '',
-    date: '',
-    location: '',
-    name: '',
-    slug: '',
-    parent_id: '',
-    description: '',
-    full_name: '',
-    role: 'user',
-    avatar_url: '',
-    status: 'published',
-    card1_title: '',
-    card1_content: '',
-    card2_title: '',
-    card2_content: '',
-    card3_title: '',
-    card3_content: '',
-    selectedTags: [],
-    menuLabel: '',
-    menuType: 'page',
-    menuTargetId: '',
-    menuUrl: '',
-    menuSortOrder: 0,
-    menuParentId: ''
-  });
+    // Form states
+    const [formData, setFormData] = useState<any>({
+      title: '',
+      content: '',
+      excerpt: '',
+      category: '',
+      image_url: '',
+      date: '',
+      location: '',
+      name: '',
+      slug: '',
+      parent_id: '',
+      description: '',
+      full_name: '',
+      role: 'user',
+      avatar_url: '',
+      status: 'published',
+      card1_title: '',
+      card1_content: '',
+      card2_title: '',
+      card2_content: '',
+      card3_title: '',
+      card3_content: '',
+      selectedTags: [],
+      menuLabel: '',
+      menuType: 'page',
+      menuTargetId: '',
+      menuUrl: '',
+      menuSortOrder: 0,
+      menuParentId: '',
+      userEmail: '',
+      userPassword: ''
+    });
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -418,7 +420,9 @@ export default function AdminPage() {
       menuTargetId: '',
       menuUrl: '',
       menuSortOrder: 0,
-      menuParentId: ''
+      menuParentId: '',
+      userEmail: '',
+      userPassword: ''
     });
     setEditingId(null);
     setViewMode('list');
@@ -458,19 +462,20 @@ export default function AdminPage() {
         slug: item.slug,
         parent_id: item.parent_id || ''
       });
-    } else if (activeTab === 'pages') {
-      setFormData({
-        title: item.title,
-        content: item.content || '',
-        slug: item.slug,
-        status: item.status || 'published',
-        card1_title: item.card1_title || '',
-        card1_content: item.card1_content || '',
-        card2_title: item.card2_title || '',
-        card2_content: item.card2_content || '',
-        card3_title: item.card3_title || '',
-        card3_content: item.card3_content || ''
-      });
+      } else if (activeTab === 'pages') {
+        setFormData({
+          title: item.title,
+          content: item.content || '',
+          slug: item.slug,
+          status: item.status || 'published',
+          image_url: item.image_url || '',
+          card1_title: item.card1_title || '',
+          card1_content: item.card1_content || '',
+          card2_title: item.card2_title || '',
+          card2_content: item.card2_content || '',
+          card3_title: item.card3_title || '',
+          card3_content: item.card3_content || ''
+        });
     } else if (activeTab === 'users') {
       setFormData({
         full_name: item.full_name,
@@ -522,19 +527,20 @@ export default function AdminPage() {
             slug: formData.slug,
             parent_id: formData.parent_id ? Number(formData.parent_id) : null
           });
-        } else if (activeTab === 'pages') {
-            result = await actions.updatePageAction(Number(editingId), {
-              title: formData.title,
-              content: formData.content,
-              slug: formData.slug,
-              status: formData.status,
-              card1_title: formData.card1_title,
-              card1_content: formData.card1_content,
-              card2_title: formData.card2_title,
-              card2_content: formData.card2_content,
-              card3_title: formData.card3_title,
-              card3_content: formData.card3_content
-            });
+          } else if (activeTab === 'pages') {
+              result = await actions.updatePageAction(Number(editingId), {
+                title: formData.title,
+                content: formData.content,
+                slug: formData.slug,
+                status: formData.status,
+                image_url: formData.image_url,
+                card1_title: formData.card1_title,
+                card1_content: formData.card1_content,
+                card2_title: formData.card2_title,
+                card2_content: formData.card2_content,
+                card3_title: formData.card3_title,
+                card3_content: formData.card3_content
+              });
 
         } else if (activeTab === 'users') {
           result = await actions.updateProfileAction(editingId.toString(), {
@@ -575,21 +581,52 @@ export default function AdminPage() {
               slug: formData.slug,
               parent_id: formData.parent_id ? Number(formData.parent_id) : null
             });
-          } else if (activeTab === 'pages') {
-            result = await actions.createPageAction({
-              title: formData.title,
-              content: formData.content,
-              slug: formData.slug,
-              status: formData.status,
-              card1_title: formData.card1_title,
-              card1_content: formData.card1_content,
-              card2_title: formData.card2_title,
-              card2_content: formData.card2_content,
-              card3_title: formData.card3_title,
-              card3_content: formData.card3_content,
-              author_id: user.id
-            });
-          }
+            } else if (activeTab === 'pages') {
+                result = await actions.createPageAction({
+                  title: formData.title,
+                  content: formData.content,
+                  slug: formData.slug,
+                  status: formData.status,
+                  image_url: formData.image_url,
+                  card1_title: formData.card1_title,
+                  card1_content: formData.card1_content,
+                  card2_title: formData.card2_title,
+                  card2_content: formData.card2_content,
+                  card3_title: formData.card3_title,
+                  card3_content: formData.card3_content,
+                  author_id: user.id
+                });
+            } else if (activeTab === 'users') {
+              // Create user via Supabase Auth first, then create profile
+              if (!formData.userEmail || !formData.userPassword) {
+                toast.error('تکایە ئیمەیڵ و وشەی تێپەڕ پڕبکەرەوە');
+                setLoading(false);
+                return;
+              }
+              const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: formData.userEmail,
+                password: formData.userPassword,
+              });
+              if (authError) {
+                toast.error('هەڵە لە دروستکردنی بەکارهێنەر: ' + authError.message);
+                setLoading(false);
+                return;
+              }
+              if (authData.user) {
+                result = await actions.createProfileAction({
+                  id: authData.user.id,
+                  email: formData.userEmail,
+                  full_name: formData.full_name,
+                  role: formData.role,
+                  avatar_url: formData.avatar_url,
+                  status: formData.status || 'active'
+                });
+              } else {
+                toast.error('هەڵە لە دروستکردنی بەکارهێنەر');
+                setLoading(false);
+                return;
+              }
+            }
 
       }
 
@@ -1891,7 +1928,28 @@ export default function AdminPage() {
                                 </div>
                              </div>
     
-                             {formData.slug === 'about' && (
+                              {/* Page Image Upload */}
+                              <div className="space-y-4">
+                                <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">وێنەی لاپەڕە</Label>
+                                <div {...imageDropzone.getRootProps()} className={`w-full h-56 rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center gap-4 cursor-pointer transition-all bg-neutral-50/50 shadow-inner overflow-hidden relative group ${formData.image_url ? 'border-emerald-500/30' : 'border-neutral-200 hover:border-blue-500/50'}`}>
+                                  <input {...imageDropzone.getInputProps()} />
+                                  {uploading ? (
+                                    <RefreshCcw className="animate-spin text-blue-500" size={32} />
+                                  ) : formData.image_url ? (
+                                    <img src={formData.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                  ) : (
+                                    <>
+                                      <Upload size={32} className="text-neutral-300" />
+                                      <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">وێنە باربکە</span>
+                                    </>
+                                  )}
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-[2px]">
+                                    <Upload className="text-white" size={24} />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {formData.slug === 'about' && (
                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                  {[1, 2, 3].map((num) => (
                                    <Card key={num} className="p-6 border-neutral-100 bg-neutral-50/30 rounded-3xl space-y-4">
@@ -1948,6 +2006,24 @@ export default function AdminPage() {
                                 <p className="text-[10px] font-black text-neutral-400 mt-6 uppercase tracking-[0.3em]">وێنەی کەسی</p>
                              </div>
                              <div className="md:col-span-8 space-y-10">
+                                {!editingId && (
+                                  <>
+                                    <div className="space-y-4">
+                                       <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">ئیمەیڵ</Label>
+                                       <div className="relative">
+                                         <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                                         <Input type="email" value={formData.userEmail} onChange={(e) => setFormData((p: any) => ({...p, userEmail: e.target.value}))} required className="rounded-2xl h-16 border-neutral-100 bg-neutral-50 pr-12 pl-8 text-xl font-black shadow-sm ltr" placeholder="user@example.com" />
+                                       </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                       <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">وشەی تێپەڕ</Label>
+                                       <div className="relative">
+                                         <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                                         <Input type="password" value={formData.userPassword} onChange={(e) => setFormData((p: any) => ({...p, userPassword: e.target.value}))} required className="rounded-2xl h-16 border-neutral-100 bg-neutral-50 pr-12 pl-8 text-xl font-black shadow-sm ltr" placeholder="••••••••" />
+                                       </div>
+                                    </div>
+                                  </>
+                                )}
                                 <div className="space-y-4">
                                    <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-widest mr-4">ناوی تەواو</Label>
                                    <Input value={formData.full_name} onChange={(e) => setFormData((p: any) => ({...p, full_name: e.target.value}))} className="rounded-2xl h-16 border-neutral-100 bg-neutral-50 px-8 text-xl font-black shadow-sm" />

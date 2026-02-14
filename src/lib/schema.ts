@@ -87,6 +87,7 @@ export const pages = mysqlTable("pages", {
   card2_content: text("card2_content"),
   card3_title: varchar("card3_title", { length: 255 }),
   card3_content: text("card3_content"),
+  image_url: text("image_url"),
   author_id: varchar("author_id", { length: 255 }),
   created_at: timestamp("created_at").defaultNow(),
 });

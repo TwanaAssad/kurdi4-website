@@ -2,7 +2,6 @@ import React from 'react';
 import Header from "@/components/sections/Header";
 import MainNavigation from "@/components/sections/MainNavigation";
 import Footer from "@/components/sections/Footer";
-import Image from 'next/image';
 import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { pages } from "@/lib/schema";
@@ -35,18 +34,16 @@ export default async function AboutPage() {
               {pageData?.content || 'ڕێکخراوی کوردی چوار دامەزراوەیەکی سەربەخۆیە کار دەکات بۆ گەشەپێدانی زانست و پەروەردە لە کۆمەڵگای کوردیدا.'}
             </div>
           </div>
-          <div className="lg:w-1/2">
-            <div className="relative">
-              <div className="absolute -top-6 -right-6 w-full h-full border-4 border-[#c29181] rounded-3xl -z-10"></div>
-              <Image 
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200"
-                alt="About Us"
-                width={600}
-                height={400}
-                className="rounded-3xl shadow-2xl grayscale hover:grayscale-0 transition-all duration-500"
-              />
+            <div className="lg:w-1/2">
+              <div className="relative">
+                <div className="absolute -top-6 -right-6 w-full h-full border-4 border-[#c29181] rounded-3xl -z-10"></div>
+                <img 
+                  src={pageData?.image_url || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200'}
+                  alt={pageData?.title || 'About Us'}
+                  className="rounded-3xl shadow-2xl grayscale hover:grayscale-0 transition-all duration-500 w-full h-auto object-cover"
+                />
+              </div>
             </div>
-          </div>
         </div>
 
         <section className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-12">
