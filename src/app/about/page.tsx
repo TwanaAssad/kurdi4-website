@@ -37,7 +37,7 @@ export default async function AboutPage() {
               <div className="relative">
                 <div className="absolute -top-6 -right-6 w-full h-full border-4 border-[#c29181] rounded-3xl -z-10"></div>
                 <img 
-                    src={(pageData?.image_url && pageData.image_url.startsWith('http')) ? pageData.image_url : 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200'}
+                    src={pageData?.image_url || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200'}
                     alt={pageData?.title || 'About Us'}
                   className="rounded-3xl shadow-2xl grayscale hover:grayscale-0 transition-all duration-500 w-full h-auto object-cover"
                 />

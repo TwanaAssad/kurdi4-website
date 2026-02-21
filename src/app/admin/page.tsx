@@ -834,7 +834,7 @@ export default function AdminPage() {
           {!isSidebarCollapsed && (
             <>
                   <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2 shadow-inner">
-                    <img src={(settings.logo_url && settings.logo_url.startsWith('http')) ? settings.logo_url : '/logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
+                    <img src={settings.logo_url || '/logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
                 </div>
               <div className="overflow-hidden">
                 <h2 className="text-lg font-black tracking-tight leading-none mb-1">کۆنترۆڵ پانێڵ</h2>
@@ -844,7 +844,7 @@ export default function AdminPage() {
           )}
             {isSidebarCollapsed && (
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-inner">
-                  <img src={(settings.logo_url && settings.logo_url.startsWith('http')) ? settings.logo_url : '/logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
+                  <img src={settings.logo_url || '/logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
               </div>
             )}
           

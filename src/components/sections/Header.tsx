@@ -39,7 +39,7 @@ const Header = ({ settings }: { settings?: any }) => {
               <a href="/" className="block group">
                 <div className="relative">
                   <Image 
-                    src={(settings?.logo_url && settings.logo_url.startsWith('http')) ? settings.logo_url : "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain"}
+                    src={settings?.logo_url || "https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain"}
                     alt={settings?.org_name || "Kurdish Four Organization"}
                     width={140}
                     height={140}

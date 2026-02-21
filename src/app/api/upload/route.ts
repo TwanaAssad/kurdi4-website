@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import path from 'path';
+import fs from 'fs/promises';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,44 +18,21 @@ export async function POST(request: NextRequest) {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     
-    const bucketName = 'uploads';
-
-    // Upload to Supabase Storage
-    const { data, error } = await supabaseAdmin
-      .storage
-      .from(bucketName)
-      .upload(fileName, buffer, {
-        contentType: file.type,
-        upsert: true
-      });
-
-    if (error) {
-      // If bucket doesn't exist, try to create it
-      if (error.message.includes('bucket not found') || error.message.includes('does not exist')) {
-        await supabaseAdmin.storage.createBucket(bucketName, {
-          public: true
-        });
-        
-        // Try upload again
-        const { data: retryData, error: retryError } = await supabaseAdmin
-          .storage
-          .from(bucketName)
-          .upload(fileName, buffer, {
-            contentType: file.type,
-            upsert: true
-          });
-          
-        if (retryError) throw retryError;
-      } else {
-        throw error;
-      }
+    // Path to public/uploads
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    
+    // Ensure directory exists
+    try {
+      await fs.access(uploadDir);
+    } catch {
+      await fs.mkdir(uploadDir, { recursive: true });
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabaseAdmin
-      .storage
-      .from(bucketName)
-      .getPublicUrl(fileName);
+    const filePath = path.join(uploadDir, fileName);
+    await fs.writeFile(filePath, buffer);
+
+    // Public URL for local storage
+    const publicUrl = `/uploads/${fileName}`;
 
     return NextResponse.json({ success: true, publicUrl });
   } catch (error: any) {
