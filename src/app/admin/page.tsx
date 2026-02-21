@@ -219,43 +219,60 @@ export default function AdminPage() {
   }, []);
 
     const fetchStats = async () => {
-      const data = await actions.getStatsAction();
-      setStats((prev: any) => ({
-        ...prev,
-        ...data
-      }));
+      try {
+        const data = await actions.getStatsAction();
+        setStats((prev: any) => ({
+          ...prev,
+          ...data
+        }));
+      } catch (e) {
+        console.error("fetchStats error:", e);
+      }
     };
 
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([
-        fetchPosts(),
-        fetchCategories(),
-        fetchTags(),
-        fetchMenuItems(),
-        fetchPages(),
-        fetchProfiles(),
-        fetchStats()
-      ]);
+      try {
+        await Promise.all([
+          fetchPosts(),
+          fetchCategories(),
+          fetchTags(),
+          fetchMenuItems(),
+          fetchPages(),
+          fetchProfiles(),
+          fetchStats()
+        ]);
+      } catch (e) {
+        console.error("fetchData error:", e);
+      }
       setLoading(false);
     };
 
   const fetchSettings = async () => {
-    const data = await actions.getSiteSettingsAction();
-    if (data) setSettings(data);
+    try {
+      const data = await actions.getSiteSettingsAction();
+      if (data) setSettings(data);
+    } catch (e) {
+      console.error("fetchSettings error:", e);
+    }
   };
 
   const fetchPosts = async () => {
-    const { data, count } = await actions.getPostsAction({
-      searchTerm,
-      statusFilter,
-      authorFilter,
-      dateFilter,
-      page: currentPage,
-      pageSize
-    });
-    setTotalCount(count || 0);
-    setPosts(data || []);
+    try {
+      const { data, count } = await actions.getPostsAction({
+        searchTerm,
+        statusFilter,
+        authorFilter,
+        dateFilter,
+        page: currentPage,
+        pageSize
+      });
+      setTotalCount(count || 0);
+      setPosts(data || []);
+    } catch (e) {
+      console.error("fetchPosts error:", e);
+      setPosts([]);
+    }
   };
 
   const fetchCategories = async () => {
@@ -834,7 +851,7 @@ export default function AdminPage() {
           {!isSidebarCollapsed && (
             <>
                   <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2 shadow-inner">
-                    <img src={settings.logo_url || '/logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
+                    <img src={settings.logo_url || 'https://supabase.com/dashboard/img/supabase-logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
                 </div>
               <div className="overflow-hidden">
                 <h2 className="text-lg font-black tracking-tight leading-none mb-1">کۆنترۆڵ پانێڵ</h2>
@@ -844,7 +861,7 @@ export default function AdminPage() {
           )}
             {isSidebarCollapsed && (
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-inner">
-                  <img src={settings.logo_url || '/logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
+                  <img src={settings.logo_url || 'https://supabase.com/dashboard/img/supabase-logo.png'} alt="Logo" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(settings.org_name) + '&background=563a4a&color=fff'; }} />
               </div>
             )}
           
@@ -1386,9 +1403,9 @@ export default function AdminPage() {
                             <TableRow key={profile.id} className="border-neutral-50 hover:bg-neutral-50/30">
                               <TableCell className="p-6 text-right">
                                 <div className="flex items-center gap-4 justify-start">
-                                    <div className="w-10 h-10 rounded-lg bg-neutral-100 overflow-hidden">
+                                    <div className="w-10 h-10 rounded-lg bg-neutral-100 overflow-hidden border border-neutral-200">
                                        {(profile.avatar_url && profile.avatar_url.startsWith('http')) ? (
-                                          <img src={profile.avatar_url} className="w-full h-full object-cover" />
+                                          <img src={profile.avatar_url} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.full_name || 'U') + '&background=f0f0f0&color=563a4a'; }} />
                                         ) : <User size={20} className="w-full h-full p-2 text-neutral-300" />}
                                     </div>
                                   <span className="font-bold text-neutral-800">{profile.full_name || 'بێ ناو'}</span>

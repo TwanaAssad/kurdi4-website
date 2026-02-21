@@ -2,15 +2,20 @@ import React from 'react';
 import Header from "@/components/sections/Header";
 import MainNavigation from "@/components/sections/MainNavigation";
 import Footer from "@/components/sections/Footer";
-import { getSiteSettings } from "@/lib/settings";
+import { getSiteSettings, getRows } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { Target, Eye, Lightbulb } from 'lucide-react';
 
 async function getPageData() {
-  const result = await db.execute(sql.raw(`SELECT * FROM pages WHERE slug = 'about' LIMIT 1`)) as any;
-  const rows = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : (result?.rows ?? []);
-  return rows[0] ?? null;
+  try {
+    const result = await db.execute(sql.raw(`SELECT * FROM pages WHERE slug = 'about' LIMIT 1`)) as any;
+    const rows = getRows(result);
+    return rows[0] ?? null;
+  } catch (error) {
+    console.error("Failed to fetch about page data:", error);
+    return null;
+  }
 }
 
 export default async function AboutPage() {
