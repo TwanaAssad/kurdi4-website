@@ -179,22 +179,19 @@ export default async function PostPage({ params }: PostPageProps) {
 async function RelatedPosts({ currentId, category }: { currentId: number, category: string | null }) {
   if (!category) return null;
 
-  const related = await db.query.posts.findMany({
-    where: and(
-      eq(posts.category, category),
-      ne(posts.id, currentId),
-      eq(posts.status, 'published')
-    ),
-    limit: 3
-  });
+  const safeCategory = category.replace(/'/g, "\\'");
+  const result = await db.execute(
+    sql.raw(`SELECT * FROM posts WHERE category = '${safeCategory}' AND id != ${currentId} AND status = 'published' LIMIT 3`)
+  ) as any;
+  const related: any[] = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : (result?.rows ?? []);
 
   if (!related || related.length === 0) return null;
 
-  const catData = await db.query.categories.findFirst({
-    where: eq(categories.name, category)
-  });
-
-  const categorySlug = catData?.slug;
+  const catResult = await db.execute(
+    sql.raw(`SELECT slug FROM categories WHERE name = '${safeCategory}' LIMIT 1`)
+  ) as any;
+  const catRows: any[] = Array.isArray(catResult) ? (Array.isArray(catResult[0]) ? catResult[0] : catResult) : (catResult?.rows ?? []);
+  const categorySlug = catRows[0]?.slug;
 
   return (
     <section className="mt-20">

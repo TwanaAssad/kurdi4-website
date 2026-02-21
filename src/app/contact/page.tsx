@@ -5,15 +5,13 @@ import Footer from "@/components/sections/Footer";
 import ContactForm from "@/components/sections/ContactForm";
 import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
-import { pages } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 async function getPageData() {
-  const data = await db.query.pages.findFirst({
-    where: eq(pages.slug, 'contact')
-  });
-  return data;
+  const result = await db.execute(sql.raw(`SELECT * FROM pages WHERE slug = 'contact' LIMIT 1`)) as any;
+  const rows = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : (result?.rows ?? []);
+  return rows[0] ?? null;
 }
 
 export default async function ContactPage() {

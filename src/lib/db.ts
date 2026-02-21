@@ -12,7 +12,13 @@ const globalForDb = globalThis as unknown as {
   pool: mysql.Pool | undefined;
 };
 
-const pool = globalForDb.pool ?? mysql.createPool(connectionString);
+const pool = globalForDb.pool ?? mysql.createPool({
+  uri: connectionString,
+  connectTimeout: 5000,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
 
 if (process.env.NODE_ENV !== "production") globalForDb.pool = pool;
 

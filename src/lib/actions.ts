@@ -21,17 +21,14 @@ const {
 function cleanData(data: any, numericFields: string[] = [], ignoreFields: string[] = ["id"]) {
   const cleaned: any = { ...data };
   
-  // Remove ignored fields
   ignoreFields.forEach(field => delete cleaned[field]);
   
-  // Clean up all fields (convert empty strings to null or appropriate types)
   Object.keys(cleaned).forEach(key => {
     if (cleaned[key] === "" || cleaned[key] === undefined) {
       cleaned[key] = null;
     }
   });
 
-  // Handle numeric fields
   numericFields.forEach(field => {
     if (cleaned[field] !== null) {
       const parsed = parseInt(cleaned[field]);
@@ -42,42 +39,64 @@ function cleanData(data: any, numericFields: string[] = [], ignoreFields: string
   return cleaned;
 }
 
+function getRows(result: any): any[] {
+  if (Array.isArray(result)) return result;
+  if (result?.rows) return result.rows;
+  if (result?.[0] && Array.isArray(result[0])) return result[0];
+  return [];
+}
+
 // --- Posts ---
 export async function getPostsAction(params: any = {}) {
   const { searchTerm, statusFilter, authorFilter, dateFilter, page = 1, pageSize = 10 } = params;
   const offset = (page - 1) * pageSize;
 
-  let conditions = [];
-  if (searchTerm) conditions.push(like(posts.title, `%${searchTerm}%`));
-  if (statusFilter && statusFilter !== 'all') conditions.push(eq(posts.status, statusFilter as any));
-  if (authorFilter && authorFilter !== 'all') conditions.push(eq(posts.author_id, authorFilter));
-  
+  let whereConditions = ['1=1'];
+  const queryParams: any[] = [];
+
+  if (searchTerm) {
+    whereConditions.push('posts.title LIKE ?');
+    queryParams.push(`%${searchTerm}%`);
+  }
+  if (statusFilter && statusFilter !== 'all') {
+    whereConditions.push('posts.status = ?');
+    queryParams.push(statusFilter);
+  }
+  if (authorFilter && authorFilter !== 'all') {
+    whereConditions.push('posts.author_id = ?');
+    queryParams.push(authorFilter);
+  }
   if (dateFilter) {
-    // Ensure date is in MySQL format
     const dateObj = new Date(dateFilter);
     if (!isNaN(dateObj.getTime())) {
-      conditions.push(gte(posts.created_at, dateObj));
+      whereConditions.push('posts.created_at >= ?');
+      queryParams.push(dateObj.toISOString().slice(0, 10));
     }
   }
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+  const whereStr = whereConditions.join(' AND ');
 
-  const data = await db.query.posts.findMany({
-    where: whereClause,
-    orderBy: [desc(posts.created_at)],
-    limit: pageSize,
-    offset: offset,
-  });
+  const dataResult = await db.execute(
+    sql.raw(`SELECT id, title, content, excerpt, category, category_id, sub_category_id, image_url, status, author_id, created_at, views FROM posts WHERE ${whereStr} ORDER BY created_at DESC LIMIT ${pageSize} OFFSET ${offset}`)
+  ) as any;
 
-  const totalResult = await db.select({ value: count() }).from(posts).where(whereClause);
-  
+  const countResult = await db.execute(
+    sql.raw(`SELECT COUNT(*) as total FROM posts WHERE ${whereStr}`)
+  ) as any;
+
+  const data = getRows(dataResult);
+  const totalRows = getRows(countResult);
+  const total = totalRows[0]?.total ?? 0;
+
   // Fetch tags for each post
-  const postsWithTags = await Promise.all(data.map(async (post) => {
-    const t = await db.select({ tag_id: postTags.tag_id }).from(postTags).where(eq(postTags.post_id, post.id));
-    return { ...post, post_tags: t };
+  const postsWithTags = await Promise.all(data.map(async (post: any) => {
+    const tagResult = await db.execute(
+      sql`SELECT tag_id FROM post_tags WHERE post_id = ${post.id}`
+    ) as any;
+    return { ...post, post_tags: getRows(tagResult) };
   }));
 
-  return { data: postsWithTags, count: totalResult[0].value };
+  return { data: postsWithTags, count: Number(total) };
 }
 
 export async function createPostAction(data: any) {
@@ -102,7 +121,6 @@ export async function updatePostAction(id: number, data: any) {
 
   await db.update(posts).set(postData).where(eq(posts.id, id));
 
-  // Update tags
   await db.delete(postTags).where(eq(postTags.post_id, id));
   if (selectedTags && selectedTags.length > 0) {
     await db.insert(postTags).values(
@@ -122,15 +140,14 @@ export async function deletePostAction(id: number) {
 
 // --- Categories ---
 export async function getCategoriesAction() {
-  const data = await db.query.categories.findMany({
-    orderBy: [desc(categories.name)],
-  });
-  return data;
+  const result = await db.execute(
+    sql.raw(`SELECT * FROM categories ORDER BY name DESC`)
+  ) as any;
+  return getRows(result);
 }
 
 export async function createCategoryAction(data: any) {
   const categoryData = cleanData(data, ["parent_id"]);
-
   await db.insert(categories).values(categoryData);
   revalidatePath("/admin");
   return { success: true };
@@ -138,7 +155,6 @@ export async function createCategoryAction(data: any) {
 
 export async function updateCategoryAction(id: number, data: any) {
   const categoryData = cleanData(data, ["parent_id"], ["id"]);
-
   await db.update(categories).set(categoryData).where(eq(categories.id, id));
   revalidatePath("/admin");
   return { success: true };
@@ -152,9 +168,10 @@ export async function deleteCategoryAction(id: number) {
 
 // --- Tags ---
 export async function getTagsAction() {
-  return await db.query.tags.findMany({
-    orderBy: [desc(tags.name)],
-  });
+  const result = await db.execute(
+    sql.raw(`SELECT * FROM tags ORDER BY name DESC`)
+  ) as any;
+  return getRows(result);
 }
 
 export async function createTagAction(data: any) {
@@ -179,15 +196,15 @@ export async function deleteTagAction(id: number) {
 
 // --- Menu Items ---
 export async function getMenuItemsAction() {
-  return await db.query.menuItems.findMany({
-    orderBy: [desc(menuItems.sort_order)],
-  });
+  const result = await db.execute(
+    sql.raw(`SELECT * FROM menu_items ORDER BY sort_order DESC`)
+  ) as any;
+  return getRows(result);
 }
 
 export async function createMenuItemAction(data: any) {
   const itemData = cleanData(data, ["parent_id", "sort_order"]);
   if (itemData.sort_order === null) itemData.sort_order = 0;
-
   await db.insert(menuItems).values(itemData);
   revalidatePath("/admin");
   return { success: true };
@@ -196,7 +213,6 @@ export async function createMenuItemAction(data: any) {
 export async function updateMenuItemAction(id: number, data: any) {
   const itemData = cleanData(data, ["parent_id", "sort_order"], ["id"]);
   if (itemData.sort_order === null) itemData.sort_order = 0;
-
   await db.update(menuItems).set(itemData).where(eq(menuItems.id, id));
   revalidatePath("/admin");
   return { success: true };
@@ -213,21 +229,23 @@ export async function getPagesAction(params: any = {}) {
   const { searchTerm, statusFilter, page = 1, pageSize = 10 } = params;
   const offset = (page - 1) * pageSize;
 
-  let conditions = [];
-  if (searchTerm) conditions.push(like(pages.title, `%${searchTerm}%`));
-  if (statusFilter && statusFilter !== 'all') conditions.push(eq(pages.status, statusFilter));
+  let whereConditions = ['1=1'];
+  if (searchTerm) whereConditions.push(`title LIKE '%${searchTerm.replace(/'/g, "\\'")}%'`);
+  if (statusFilter && statusFilter !== 'all') whereConditions.push(`status = '${statusFilter}'`);
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+  const whereStr = whereConditions.join(' AND ');
 
-  const data = await db.query.pages.findMany({
-    where: whereClause,
-    orderBy: [desc(pages.created_at)],
-    limit: pageSize,
-    offset: offset,
-  });
+  const dataResult = await db.execute(
+    sql.raw(`SELECT * FROM pages WHERE ${whereStr} ORDER BY created_at DESC LIMIT ${pageSize} OFFSET ${offset}`)
+  ) as any;
 
-  const totalResult = await db.select({ value: count() }).from(pages).where(whereClause);
-  return { data, count: totalResult[0].value };
+  const countResult = await db.execute(
+    sql.raw(`SELECT COUNT(*) as total FROM pages WHERE ${whereStr}`)
+  ) as any;
+
+  const data = getRows(dataResult);
+  const totalRows = getRows(countResult);
+  return { data, count: Number(totalRows[0]?.total ?? 0) };
 }
 
 export async function createPageAction(data: any) {
@@ -255,23 +273,26 @@ export async function getProfilesAction(params: any = {}) {
   const { searchTerm, statusFilter, page = 1, pageSize = 10 } = params;
   const offset = (page - 1) * pageSize;
 
-  let conditions = [];
-  if (searchTerm) conditions.push(like(profiles.full_name, `%${searchTerm}%`));
+  let whereConditions = ['1=1'];
+  if (searchTerm) whereConditions.push(`full_name LIKE '%${searchTerm.replace(/'/g, "\\'")}%'`);
   if (statusFilter && statusFilter !== 'all' && statusFilter !== 'deleted') {
-    conditions.push(eq(profiles.status, statusFilter === 'published' ? 'active' : 'suspended'));
+    const statusVal = statusFilter === 'published' ? 'active' : 'suspended';
+    whereConditions.push(`status = '${statusVal}'`);
   }
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+  const whereStr = whereConditions.join(' AND ');
 
-  const data = await db.query.profiles.findMany({
-    where: whereClause,
-    orderBy: [desc(profiles.created_at)],
-    limit: pageSize,
-    offset: offset,
-  });
+  const dataResult = await db.execute(
+    sql.raw(`SELECT * FROM profiles WHERE ${whereStr} ORDER BY created_at DESC LIMIT ${pageSize} OFFSET ${offset}`)
+  ) as any;
 
-  const totalResult = await db.select({ value: count() }).from(profiles).where(whereClause);
-  return { data, count: totalResult[0].value };
+  const countResult = await db.execute(
+    sql.raw(`SELECT COUNT(*) as total FROM profiles WHERE ${whereStr}`)
+  ) as any;
+
+  const data = getRows(dataResult);
+  const totalRows = getRows(countResult);
+  return { data, count: Number(totalRows[0]?.total ?? 0) };
 }
 
 export async function updateProfileAction(id: string, data: any) {
@@ -304,8 +325,11 @@ export async function deleteProfileAction(id: string) {
 // --- Site Settings ---
 export async function getSiteSettingsAction() {
   try {
-    const data = await db.query.siteSettings.findFirst();
-    return data;
+    const result = await db.execute(
+      sql.raw(`SELECT * FROM site_settings LIMIT 1`)
+    ) as any;
+    const rows = getRows(result);
+    return rows[0] ?? null;
   } catch (error) {
     console.error("Failed to fetch site settings:", error);
     return null;
@@ -314,7 +338,6 @@ export async function getSiteSettingsAction() {
 
 export async function updateSiteSettingsAction(data: any) {
   try {
-    // Use raw SQL to ensure the update actually persists
     const orgName = data.org_name || null;
     const logoUrl = data.logo_url || null;
     const primaryColor = data.primary_color || '#563a4a';
@@ -364,69 +387,58 @@ export async function updateSiteSettingsAction(data: any) {
 
 // --- Stats ---
 export async function getStatsAction() {
-  const postCount = await db.select({ value: count() }).from(posts);
-  const catCount = await db.select({ value: count() }).from(categories);
-  const userCount = await db.select({ value: count() }).from(profiles);
-  const postViewCount = await db.select({ value: sql<number>`sum(${posts.views})` }).from(posts);
-  const totalSiteVisitCount = await db.select({ value: sql<number>`sum(${siteVisits.count})` }).from(siteVisits);
-  
-  const recentPosts = await db.query.posts.findMany({
-    orderBy: [desc(posts.created_at)],
-    limit: 5,
-  });
+  const postCountRes = await db.execute(sql.raw(`SELECT COUNT(*) as total FROM posts`)) as any;
+  const catCountRes = await db.execute(sql.raw(`SELECT COUNT(*) as total FROM categories`)) as any;
+  const userCountRes = await db.execute(sql.raw(`SELECT COUNT(*) as total FROM profiles`)) as any;
+  const postViewRes = await db.execute(sql.raw(`SELECT SUM(views) as total FROM posts`)) as any;
+  const visitRes = await db.execute(sql.raw(`SELECT SUM(count) as total FROM site_visits`)) as any;
 
-  // Generate real data for the last 7 days from siteVisits table
+  const recentPostsRes = await db.execute(
+    sql.raw(`SELECT * FROM posts ORDER BY created_at DESC LIMIT 5`)
+  ) as any;
+
   const days = ['هەینی', 'پێنجشەممە', 'چوارشەممە', 'سێشەممە', 'دووشەممە', 'یەکشەممە', 'شەممە'].reverse();
   const chartData = await Promise.all(days.map(async (day, index) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - index));
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    
-    const visitRecord = await db.query.siteVisits.findFirst({
-      where: eq(siteVisits.visit_date, startOfDay)
-    });
-    
-    return {
-      name: day,
-      value: visitRecord?.count || 0
-    };
+    const dateStr = date.toISOString().slice(0, 10);
+
+    const visitRecord = await db.execute(
+      sql.raw(`SELECT count FROM site_visits WHERE DATE(visit_date) = '${dateStr}' LIMIT 1`)
+    ) as any;
+    const rows = getRows(visitRecord);
+
+    return { name: day, value: rows[0]?.count || 0 };
   }));
 
   return {
-    totalPosts: postCount[0].value,
-    totalCategories: catCount[0].value,
-    totalUsers: userCount[0].value,
-    totalViews: totalSiteVisitCount[0].value || 0,
-    postViews: postViewCount[0].value || 0,
-    recentActivity: recentPosts,
-    chartData: chartData
+    totalPosts: Number(getRows(postCountRes)[0]?.total ?? 0),
+    totalCategories: Number(getRows(catCountRes)[0]?.total ?? 0),
+    totalUsers: Number(getRows(userCountRes)[0]?.total ?? 0),
+    totalViews: Number(getRows(visitRes)[0]?.total ?? 0),
+    postViews: Number(getRows(postViewRes)[0]?.total ?? 0),
+    recentActivity: getRows(recentPostsRes),
+    chartData,
   };
 }
 
 export async function trackVisitAction() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  // Try to find today's record
-  const existing = await db.query.siteVisits.findFirst({
-    where: eq(siteVisits.visit_date, today)
-  });
+  try {
+    const existing = await db.execute(
+      sql.raw(`SELECT id, count FROM site_visits WHERE DATE(visit_date) = CURDATE() LIMIT 1`)
+    ) as any;
 
-  if (existing) {
-    await db.update(siteVisits)
-      .set({ count: sql`${siteVisits.count} + 1` })
-      .where(eq(siteVisits.id, existing.id));
-  } else {
-    try {
-      await db.insert(siteVisits).values({
-        visit_date: today,
-        count: 1
-      });
-    } catch (e) {
-      // In case of race condition
-      await db.update(siteVisits)
-        .set({ count: sql`${siteVisits.count} + 1` })
-        .where(eq(siteVisits.visit_date, today));
+    const rows = getRows(existing);
+    const row = rows[0];
+
+    if (row?.id) {
+      await db.execute(sql`UPDATE site_visits SET count = count + 1 WHERE id = ${row.id}`);
+    } else {
+      await db.execute(
+        sql.raw(`INSERT INTO site_visits (visit_date, count) VALUES (NOW(), 1) ON DUPLICATE KEY UPDATE count = count + 1`)
+      );
     }
+  } catch (e) {
+    console.error("Visit tracking error:", e);
   }
 }

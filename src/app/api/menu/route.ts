@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { menuItems, pages, categories } from "@/lib/schema";
-import { eq, asc } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+
+function getRows(result: any): any[] {
+  if (Array.isArray(result)) {
+    if (result.length > 0 && Array.isArray(result[0])) return result[0];
+    return result;
+  }
+  if (result?.rows) return result.rows;
+  return [];
+}
 
 export async function GET() {
   try {
-    const allItems = await db.query.menuItems.findMany({
-      orderBy: [asc(menuItems.sort_order)],
-    });
+    const menuResult = await db.execute(sql.raw(
+      `SELECT * FROM menu_items ORDER BY sort_order ASC`
+    )) as any;
+
+    const allItems = getRows(menuResult);
 
     if (allItems.length === 0) {
       return NextResponse.json([
@@ -17,23 +27,25 @@ export async function GET() {
       ]);
     }
 
-    const buildHierarchy = async (items: any[], parentId: number | null = null) => {
-      const levelItems = items.filter(item => item.parent_id === parentId);
-      
+    const buildHierarchy = async (items: any[], parentId: number | null = null): Promise<any[]> => {
+      const levelItems = items.filter((item: any) => item.parent_id === parentId);
       const result = [];
+
       for (const item of levelItems) {
         let href = item.url || "#";
-        
-        if (item.type === 'page' && item.target_id) {
-          const page = await db.query.pages.findFirst({
-            where: eq(pages.id, parseInt(item.target_id))
-          });
-          if (page) href = `/${page.slug}`;
-        } else if (item.type === 'category' && item.target_id) {
-          const category = await db.query.categories.findFirst({
-            where: eq(categories.id, parseInt(item.target_id))
-          });
-          if (category) href = `/category/${category.slug}`;
+
+        if (item.type === "page" && item.target_id) {
+          const pageResult = await db.execute(sql.raw(
+            `SELECT slug FROM pages WHERE id = ${parseInt(item.target_id)} LIMIT 1`
+          )) as any;
+          const rows = getRows(pageResult);
+          if (rows[0]?.slug) href = `/${rows[0].slug}`;
+        } else if (item.type === "category" && item.target_id) {
+          const catResult = await db.execute(sql.raw(
+            `SELECT slug FROM categories WHERE id = ${parseInt(item.target_id)} LIMIT 1`
+          )) as any;
+          const rows = getRows(catResult);
+          if (rows[0]?.slug) href = `/category/${rows[0].slug}`;
         }
 
         const children = await buildHierarchy(items, item.id);
@@ -42,7 +54,7 @@ export async function GET() {
           name: item.label,
           href,
           children,
-          hasChildren: children.length > 0
+          hasChildren: children.length > 0,
         });
       }
       return result;

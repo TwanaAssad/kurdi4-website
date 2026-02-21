@@ -6,8 +6,7 @@ import SidebarWidgets from "@/components/sections/SidebarWidgets";
 import CategoryPostsList from "@/components/sections/CategoryPostsList";
 import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
-import { categories } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { notFound } from 'next/navigation';
 
 interface CategoryPageProps {
@@ -15,12 +14,9 @@ interface CategoryPageProps {
 }
 
 async function getCategory(slug: string) {
-  const data = await db.query.categories.findFirst({
-    where: eq(categories.slug, slug)
-  });
-
-  if (!data) return null;
-  return data;
+  const result = await db.execute(sql.raw(`SELECT * FROM categories WHERE slug = '${slug.replace(/'/g, "\\'")}' LIMIT 1`)) as any;
+  const rows = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : (result?.rows ?? []);
+  return rows[0] ?? null;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {

@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { posts, categories, postTags, tags } from "@/lib/schema";
-import { eq, desc, and, count, sql, or, like, aliasedTable } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+
+function getRows(result: any): any[] {
+  if (Array.isArray(result)) {
+    if (result.length > 0 && Array.isArray(result[0])) return result[0];
+    return result;
+  }
+  if (result?.rows) return result.rows;
+  return [];
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,60 +20,30 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = page * limit;
 
-    // Create aliases for categories to join twice (for sub and main)
-    const cat = aliasedTable(categories, "cat");
-    const parentCat = aliasedTable(categories, "parentCat");
-
-    let conditions = [eq(posts.status, "published")];
+    let conditions = ["posts.status = 'published'"];
 
     if (categoryName) {
-      conditions.push(or(
-        eq(posts.category, categoryName),
-        eq(cat.name, categoryName),
-        eq(parentCat.name, categoryName)
-      ) as any);
+      const escaped = categoryName.replace(/'/g, "\\'");
+      conditions.push(`(posts.category = '${escaped}' OR EXISTS (SELECT 1 FROM categories c WHERE c.id = posts.category_id AND c.name = '${escaped}'))`);
     }
-
     if (search) {
-      conditions.push(or(
-        like(posts.title, `%${search}%`),
-        like(posts.content, `%${search}%`)
-      ) as any);
+      const escaped = search.replace(/'/g, "\\'");
+      conditions.push(`(posts.title LIKE '%${escaped}%' OR posts.content LIKE '%${escaped}%')`);
     }
 
-    const whereClause = and(...conditions);
+    const whereStr = conditions.join(" AND ");
 
-    const data = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        excerpt: posts.excerpt,
-        content: posts.content,
-        category: posts.category,
-        category_id: posts.category_id,
-        sub_category_id: posts.sub_category_id,
-        image_url: posts.image_url,
-        status: posts.status,
-        author_id: posts.author_id,
-        created_at: posts.created_at,
-        views: posts.views,
-        main_category: sql<string>`COALESCE(${parentCat.name}, ${cat.name}, ${posts.category}, 'گشتی')`,
-      })
-      .from(posts)
-      .leftJoin(cat, eq(posts.category_id, cat.id))
-      .leftJoin(parentCat, eq(cat.parent_id, parentCat.id))
-      .where(whereClause)
-      .orderBy(desc(posts.created_at))
-      .limit(limit)
-      .offset(offset);
+    const dataResult = await db.execute(sql.raw(
+      `SELECT posts.id, posts.title, posts.excerpt, posts.content, posts.category, posts.category_id, posts.sub_category_id, posts.image_url, posts.status, posts.author_id, posts.created_at, posts.views FROM posts WHERE ${whereStr} ORDER BY posts.created_at DESC LIMIT ${limit} OFFSET ${offset}`
+    )) as any;
 
-    // Get total count for pagination
-    const totalResult = await db.select({ value: count() })
-      .from(posts)
-      .leftJoin(cat, eq(posts.category_id, cat.id))
-      .leftJoin(parentCat, eq(cat.parent_id, parentCat.id))
-      .where(whereClause);
-    const total = totalResult[0].value;
+    const countResult = await db.execute(sql.raw(
+      `SELECT COUNT(*) as total FROM posts WHERE ${whereStr}`
+    )) as any;
+
+    const data = getRows(dataResult);
+    const totalRows = getRows(countResult);
+    const total = Number(totalRows[0]?.total ?? 0);
 
     return NextResponse.json({
       data,

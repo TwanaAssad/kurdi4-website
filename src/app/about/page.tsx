@@ -4,15 +4,13 @@ import MainNavigation from "@/components/sections/MainNavigation";
 import Footer from "@/components/sections/Footer";
 import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
-import { pages } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { Target, Eye, Lightbulb } from 'lucide-react';
 
 async function getPageData() {
-  const data = await db.query.pages.findFirst({
-    where: eq(pages.slug, 'about')
-  });
-  return data;
+  const result = await db.execute(sql.raw(`SELECT * FROM pages WHERE slug = 'about' LIMIT 1`)) as any;
+  const rows = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : (result?.rows ?? []);
+  return rows[0] ?? null;
 }
 
 export default async function AboutPage() {
@@ -30,16 +28,17 @@ export default async function AboutPage() {
             <h1 className="text-5xl font-black text-[#563a4a] leading-tight">
               {pageData?.title || 'دەربارەی ئێمە'}
             </h1>
-            <div className="text-xl text-gray-600 leading-relaxed whitespace-pre-wrap">
-              {pageData?.content || 'ڕێکخراوی کوردی چوار دامەزراوەیەکی سەربەخۆیە کار دەکات بۆ گەشەپێدانی زانست و پەروەردە لە کۆمەڵگای کوردیدا.'}
-            </div>
+            <div 
+                className="text-xl text-gray-600 leading-relaxed [&_p]:mb-4 [&_strong]:font-bold [&_strong]:text-[#563a4a] [&_ol]:list-decimal [&_ol]:pr-6 [&_ol]:my-4 [&_li]:mb-2"
+                dangerouslySetInnerHTML={{ __html: pageData?.content || 'ڕێکخراوی کوردی چوار دامەزراوەیەکی سەربەخۆیە کار دەکات بۆ گەشەپێدانی زانست و پەروەردە لە کۆمەڵگای کوردیدا.' }}
+              />
           </div>
             <div className="lg:w-1/2">
               <div className="relative">
                 <div className="absolute -top-6 -right-6 w-full h-full border-4 border-[#c29181] rounded-3xl -z-10"></div>
                 <img 
-                  src={pageData?.image_url || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200'}
-                  alt={pageData?.title || 'About Us'}
+                    src={(pageData?.image_url && pageData.image_url.startsWith('http')) ? pageData.image_url : 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200'}
+                    alt={pageData?.title || 'About Us'}
                   className="rounded-3xl shadow-2xl grayscale hover:grayscale-0 transition-all duration-500 w-full h-auto object-cover"
                 />
               </div>

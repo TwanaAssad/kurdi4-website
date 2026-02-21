@@ -833,8 +833,8 @@ export default function AdminPage() {
         <div className={`p-8 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-4'} border-b border-white/5 bg-black/20 relative`}>
           {!isSidebarCollapsed && (
             <>
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2 shadow-inner">
-                <img src={settings.logo_url || 'https://via.placeholder.com/150'} alt="Logo" className="w-full h-full object-contain" />
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2 shadow-inner">
+                  <img src={(settings.logo_url && settings.logo_url.startsWith('http')) ? settings.logo_url : 'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain'} alt="Logo" className="w-full h-full object-contain" />
               </div>
               <div className="overflow-hidden">
                 <h2 className="text-lg font-black tracking-tight leading-none mb-1">کۆنترۆڵ پانێڵ</h2>
@@ -843,8 +843,8 @@ export default function AdminPage() {
             </>
           )}
           {isSidebarCollapsed && (
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-inner">
-              <img src={settings.logo_url || 'https://via.placeholder.com/150'} alt="Logo" className="w-full h-full object-contain" />
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-inner">
+                <img src={(settings.logo_url && settings.logo_url.startsWith('http')) ? settings.logo_url : 'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/project-uploads/988add51-608a-4a7f-84e3-7b9ad52c69e0/KURDI4LOGO-resized-1767794622901.webp?width=403&height=403&resize=contain'} alt="Logo" className="w-full h-full object-contain" />
             </div>
           )}
           
@@ -1386,11 +1386,11 @@ export default function AdminPage() {
                             <TableRow key={profile.id} className="border-neutral-50 hover:bg-neutral-50/30">
                               <TableCell className="p-6 text-right">
                                 <div className="flex items-center gap-4 justify-start">
-                                  <div className="w-10 h-10 rounded-lg bg-neutral-100 overflow-hidden">
-                                     {profile.avatar_url ? (
-                                        <img src={profile.avatar_url} className="w-full h-full object-cover" />
-                                      ) : <User size={20} className="w-full h-full p-2 text-neutral-300" />}
-                                  </div>
+                                    <div className="w-10 h-10 rounded-lg bg-neutral-100 overflow-hidden">
+                                       {(profile.avatar_url && profile.avatar_url.startsWith('http')) ? (
+                                          <img src={profile.avatar_url} className="w-full h-full object-cover" />
+                                        ) : <User size={20} className="w-full h-full p-2 text-neutral-300" />}
+                                    </div>
                                   <span className="font-bold text-neutral-800">{profile.full_name || 'بێ ناو'}</span>
                                 </div>
                               </TableCell>

@@ -17,14 +17,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getSiteSettings();
+  const [settings] = await Promise.allSettled([getSiteSettings()]).then(r => r.map(x => x.status === 'fulfilled' ? x.value : null));
   
-  // Track site visit
-  try {
-    await trackVisitAction();
-  } catch (e) {
-    console.error("Failed to track visit:", e);
-  }
+  // Track site visit (non-blocking, fire and forget)
+  trackVisitAction().catch(() => {});
   
     // Only show Kurdish if English is not available
     const isKurdishOnly = !settings?.available_languages?.includes('en');
