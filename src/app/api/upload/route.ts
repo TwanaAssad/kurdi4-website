@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,18 +17,44 @@ export async function POST(request: NextRequest) {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     
-    // Path to public/uploads
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    
-    // Ensure directory exists
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
+    const bucketName = 'uploads';
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabaseAdmin
+      .storage
+      .from(bucketName)
+      .upload(fileName, buffer, {
+        contentType: file.type,
+        upsert: true
+      });
+
+    if (error) {
+      // If bucket doesn't exist, try to create it
+      if (error.message.includes('bucket not found') || error.message.includes('does not exist')) {
+        await supabaseAdmin.storage.createBucket(bucketName, {
+          public: true
+        });
+        
+        // Try upload again
+        const { data: retryData, error: retryError } = await supabaseAdmin
+          .storage
+          .from(bucketName)
+          .upload(fileName, buffer, {
+            contentType: file.type,
+            upsert: true
+          });
+          
+        if (retryError) throw retryError;
+      } else {
+        throw error;
+      }
     }
 
-    const path = join(uploadDir, fileName);
-    await writeFile(path, buffer);
-
-    const publicUrl = `/uploads/${fileName}`;
+    // Get public URL
+    const { data: { publicUrl } } = supabaseAdmin
+      .storage
+      .from(bucketName)
+      .getPublicUrl(fileName);
 
     return NextResponse.json({ success: true, publicUrl });
   } catch (error: any) {
