@@ -1,6 +1,13 @@
 import { db } from './db';
 import { siteSettings } from './schema';
 
+export function getRows(result: any): any[] {
+  if (Array.isArray(result)) return result;
+  if (result?.rows) return result.rows;
+  if (result?.[0] && Array.isArray(result[0])) return result[0];
+  return [];
+}
+
 const defaultSettings = {
   org_name: 'زانست و پەروەردەی کوردی',
   logo_url: '',
