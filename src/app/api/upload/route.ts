@@ -19,13 +19,14 @@ export async function POST(request: NextRequest) {
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     
     // Path to public/uploads
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    const baseDir = process.env.PWD || process.cwd();
+    const uploadDir = path.resolve(baseDir, 'public', 'uploads');
     
     // Ensure directory exists
     try {
       await fs.access(uploadDir);
     } catch {
-      await fs.mkdir(uploadDir, { recursive: true });
+      await fs.mkdir(uploadDir, { recursive: true, mode: 0o755 });
     }
 
     const filePath = path.join(uploadDir, fileName);
@@ -35,8 +36,10 @@ export async function POST(request: NextRequest) {
     const publicUrl = `/uploads/${fileName}`;
 
     return NextResponse.json({ success: true, publicUrl });
-  } catch (error: any) {
-    console.error('Error uploading file:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    } catch (error: any) {
+      console.error('Error uploading file to', uploadDir, ':', error);
+      return NextResponse.json({ 
+        error: `Failed to upload to ${uploadDir}. Error: ${error.message}` 
+      }, { status: 500 });
+    }
 }
