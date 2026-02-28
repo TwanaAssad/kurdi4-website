@@ -2,9 +2,13 @@ import { db } from './db';
 import { siteSettings } from './schema';
 
 export function getRows(result: any): any[] {
-  if (Array.isArray(result)) return result;
+  if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0]) && Array.isArray(result[1])) {
+    // Drizzle mysql2 execute returns [rows, fields]
+    return result[0];
+  }
   if (result?.rows) return result.rows;
   if (result?.[0] && Array.isArray(result[0])) return result[0];
+  if (Array.isArray(result)) return result;
   return [];
 }
 

@@ -9,6 +9,8 @@ const defaultMenu = [
   { name: "پەیوەندی", href: "/contact", hasChildren: false, children: [] },
 ];
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const menuResult = await db.execute(sql.raw(

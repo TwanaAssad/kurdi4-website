@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { getRows } from "@/lib/settings";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
