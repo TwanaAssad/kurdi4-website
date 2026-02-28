@@ -35,7 +35,13 @@ export async function GET(req: NextRequest) {
       `SELECT COUNT(*) as total FROM posts WHERE ${whereStr}`
     )) as any;
 
-    const data = getRows(dataResult);
+    const rawData = getRows(dataResult);
+    const data = rawData.map(post => {
+      if (post.image_url && !post.image_url.startsWith('http') && !post.image_url.startsWith('/') && !post.image_url.startsWith('data:')) {
+        post.image_url = `/uploads/${post.image_url}`;
+      }
+      return post;
+    });
     const totalRows = getRows(countResult);
     const total = Number(totalRows[0]?.total ?? 0);
 

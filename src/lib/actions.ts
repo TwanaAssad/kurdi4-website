@@ -39,6 +39,15 @@ function cleanData(data: any, numericFields: string[] = [], ignoreFields: string
   return cleaned;
 }
 
+
+export function normalizeImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) {
+    return url;
+  }
+  return '/uploads/' + url;
+}
+
 function getRows(result: any): any[] {
   if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0]) && Array.isArray(result[1])) {
     return result[0];
@@ -89,7 +98,10 @@ export async function getPostsAction(params: any = {}) {
       sql`SELECT COUNT(*) as total FROM posts WHERE ${whereClause}`
     ) as any;
 
-    const data = getRows(dataResult);
+    const data = getRows(dataResult).map(page => {
+      if (page.image_url) page.image_url = normalizeImageUrl(page.image_url);
+      return page;
+    });
     const totalRows = getRows(countResult);
     const total = totalRows[0]?.total ?? 0;
 
@@ -121,6 +133,7 @@ export async function createPostAction(data: any) {
   try {
     const { selectedTags, ...rawPostData } = data;
     const postData = cleanData(rawPostData, ["category_id", "sub_category_id", "views"]);
+    if (postData.image_url) postData.image_url = normalizeImageUrl(postData.image_url);
 
     const [result] = await db.insert(posts).values(postData);
     const postId = result.insertId;
@@ -343,7 +356,7 @@ export async function getPagesAction(params: any = {}) {
       sql`SELECT COUNT(*) as total FROM pages WHERE ${whereClause}`
     ) as any;
 
-    const data = getRows(dataResult);
+    const data = getRows(dataResult).map((item: any) => { if (item.image_url) item.image_url = normalizeImageUrl(item.image_url); if (item.avatar_url) item.avatar_url = normalizeImageUrl(item.avatar_url); return item; });
     const totalRows = getRows(countResult);
     return { data, count: Number(totalRows[0]?.total ?? 0) };
   } catch (error) {
@@ -355,6 +368,7 @@ export async function getPagesAction(params: any = {}) {
 export async function createPageAction(data: any) {
   try {
     const pageData = cleanData(data);
+    if (pageData.image_url) pageData.image_url = normalizeImageUrl(pageData.image_url);
     await db.insert(pages).values(pageData);
     revalidatePath("/admin");
     return { success: true };
@@ -367,6 +381,7 @@ export async function createPageAction(data: any) {
 export async function updatePageAction(id: number, data: any) {
   try {
     const pageData = cleanData(data, [], ["id", "created_at"]);
+    if (pageData.image_url) pageData.image_url = normalizeImageUrl(pageData.image_url);
     await db.update(pages).set(pageData).where(eq(pages.id, id));
     revalidatePath("/admin");
     return { success: true };
@@ -417,7 +432,7 @@ export async function getProfilesAction(params: any = {}) {
       sql`SELECT COUNT(*) as total FROM profiles WHERE ${whereClause}`
     ) as any;
 
-    const data = getRows(dataResult);
+    const data = getRows(dataResult).map((item: any) => { if (item.image_url) item.image_url = normalizeImageUrl(item.image_url); if (item.avatar_url) item.avatar_url = normalizeImageUrl(item.avatar_url); return item; });
     const totalRows = getRows(countResult);
     return { data, count: Number(totalRows[0]?.total ?? 0) };
   } catch (error) {

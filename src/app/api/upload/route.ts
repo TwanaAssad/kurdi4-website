@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 
 export async function POST(request: NextRequest) {
+  let uploadDir = 'unknown';
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     
     // Path to public/uploads
     const baseDir = process.env.PWD || process.cwd();
-    const uploadDir = path.resolve(baseDir, 'public', 'uploads');
+    uploadDir = path.resolve(baseDir, 'public', 'uploads');
     
     // Ensure directory exists
     try {
