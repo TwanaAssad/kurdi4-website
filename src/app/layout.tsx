@@ -38,16 +38,23 @@ export default async function RootLayout({
     const lang = isKurdishOnly ? 'ku' : 'en';
     const dir = lang === 'ku' ? 'rtl' : 'ltr';
 
-    return (
-      <html lang={lang} dir={dir}>
-        <head>
-          {settings?.logo_url && (
-            <>
-              <link rel="icon" href={settings.logo_url} />
-              <link rel="shortcut icon" href={settings.logo_url} />
-              <link rel="apple-touch-icon" href={settings.logo_url} />
-            </>
-          )}
+  // Convert render URL to raw object URL (strips query params browsers reject for favicons)
+  const faviconUrl = settings?.logo_url
+    ? settings.logo_url
+        .replace('/render/image/public/', '/object/public/')
+        .split('?')[0]
+    : null;
+
+  return (
+    <html lang={lang} dir={dir}>
+      <head>
+        {faviconUrl && (
+          <>
+            <link rel="icon" type="image/webp" href={faviconUrl} />
+            <link rel="shortcut icon" href={faviconUrl} />
+            <link rel="apple-touch-icon" href={faviconUrl} />
+          </>
+        )}
           <style dangerouslySetInnerHTML={{ __html: `
           :root {
             --primary: ${settings?.primary_color || '#563a4a'};
