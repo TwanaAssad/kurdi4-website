@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+
 import Header from "@/components/sections/Header";
 import MainNavigation from "@/components/sections/MainNavigation";
 import Footer from "@/components/sections/Footer";
@@ -101,12 +101,10 @@ export default async function PostPage({ params }: PostPageProps) {
           <article className="flex-1 max-w-4xl bg-white rounded-[3rem] overflow-hidden shadow-sm border border-gray-100">
             {/* Post Header Image */}
               <div className="relative h-[300px] md:h-[500px] w-full">
-                <Image
+                <img
                   src={post.image_url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070"}
                   alt={post.title}
-                  fill
-                  className="object-cover"
-                  priority
+                  className="object-cover w-full h-full absolute inset-0"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                 <div className="absolute bottom-10 right-10 text-white z-10">
@@ -206,13 +204,12 @@ async function RelatedPosts({ currentId, category }: { currentId: number, catego
             key={article.id} 
             className="group bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-50 flex flex-col h-full"
           >
-            <div className="relative h-56 overflow-hidden">
-              <Image
-                src={article.image_url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070"}
-                alt={article.title}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
+              <div className="relative h-56 overflow-hidden">
+                <img
+                  src={article.image_url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070"}
+                  alt={article.title}
+                  className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+                />
               <a 
                 href={categorySlug ? `/category/${categorySlug}` : '#'}
                 className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#563a4a] px-4 py-1.5 rounded-xl text-[10px] font-black shadow-sm hover:bg-[#c29181] hover:text-white transition-all z-10"

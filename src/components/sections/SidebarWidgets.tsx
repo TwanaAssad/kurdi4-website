@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 
 const TiktokIcon = ({ size = 20 }: { size?: number }) => (
@@ -74,13 +74,12 @@ const TiktokIcon = ({ size = 20 }: { size?: number }) => (
             {latestPosts.map((post) => (
               <li key={post.id}>
                 <a href={`/post/${post.id}`} className="flex gap-4 items-center group">
-                  <div className="flex-shrink-0 block w-20 h-20 rounded-2xl overflow-hidden relative">
-                    <Image
-                      src={post.image_url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070&auto=format&fit=crop"}
-                      alt={post.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <div className="flex-shrink-0 block w-20 h-20 rounded-2xl overflow-hidden relative">
+                      <img
+                        src={post.image_url || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070&auto=format&fit=crop"}
+                        alt={post.title}
+                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                      />
                   </div>
                   <div className="flex flex-col gap-1 text-right">
                     <h3 className="text-sm font-bold text-[#563a4a] leading-tight group-hover:text-[#c29181] transition-colors line-clamp-2">

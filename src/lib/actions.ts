@@ -40,7 +40,7 @@ function cleanData(data: any, numericFields: string[] = [], ignoreFields: string
 }
 
 
-export function normalizeImageUrl(url: string | null | undefined): string | null {
+function normalizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) {
     return url;

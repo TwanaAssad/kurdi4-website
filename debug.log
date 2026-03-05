@@ -41,3 +41,115 @@ It can also happen if the client has a browser extension installed which messes 
 2026-02-14T19:58:19.751Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
 2026-02-14T20:42:38.223Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
 2026-02-14T20:42:41.455Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-03-05T15:02:11.517Z [console][error] Uncaught Error: ./src/lib/actions.ts:43:8
+Ecmascript file had an error
+  41 |
+  42 |
+> 43 | export function normalizeImageUrl(url: string | null | undefined): string | null {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 44 |   if (!url) return null;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 45 |   if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 46 |     return url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |   }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |   return '/uploads/' + url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 49 | }
+     | ^^
+  50 |
+  51 | function getRows(result: any): any[] {
+  52 |   if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0]) && Array.isArray(result[1])) {
+
+Server Actions must be async functions.
+
+
+
+2026-03-05T15:02:11.532Z [console][error] ./src/lib/actions.ts:43:8
+Ecmascript file had an error
+  41 |
+  42 |
+> 43 | export function normalizeImageUrl(url: string | null | undefined): string | null {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 44 |   if (!url) return null;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 45 |   if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 46 |     return url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |   }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |   return '/uploads/' + url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 49 | }
+     | ^^
+  50 |
+  51 | function getRows(result: any): any[] {
+  52 |   if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0]) && Array.isArray(result[1])) {
+
+Server Actions must be async functions.
+2026-03-05T15:02:11.632Z [console][error] ./src/lib/actions.ts:43:8
+Ecmascript file had an error
+  41 |
+  42 |
+> 43 | export function normalizeImageUrl(url: string | null | undefined): string | null {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 44 |   if (!url) return null;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 45 |   if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 46 |     return url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |   }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |   return '/uploads/' + url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 49 | }
+     | ^^
+  50 |
+  51 | function getRows(result: any): any[] {
+  52 |   if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0]) && Array.isArray(result[1])) {
+
+Server Actions must be async functions.
+2026-03-05T15:02:11.633Z [console][error] ./src/lib/actions.ts:43:8
+Ecmascript file had an error
+  41 |
+  42 |
+> 43 | export function normalizeImageUrl(url: string | null | undefined): string | null {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 44 |   if (!url) return null;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 45 |   if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 46 |     return url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |   }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |   return '/uploads/' + url;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 49 | }
+     | ^^
+  50 |
+  51 | function getRows(result: any): any[] {
+  52 |   if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0]) && Array.isArray(result[1])) {
+
+Server Actions must be async functions.
+2026-03-05T18:17:44.239Z [console][warn] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+2026-03-05T18:17:44.396Z [console][warn] [Fast Refresh] rebuilding
+2026-03-05T18:17:45.346Z [console][warn] [Fast Refresh] done in 1052ms
+2026-03-05T18:17:45.904Z [console][warn] [Fast Refresh] rebuilding
+2026-03-05T18:17:46.492Z [console][warn] [Fast Refresh] done in 689ms
+2026-03-05T18:17:46.611Z [console][warn] [Fast Refresh] rebuilding
+2026-03-05T18:17:46.614Z [console][warn] [Fast Refresh] done in 114ms
+2026-03-05T18:17:51.603Z [console][error] The resource http://localhost:3000/_next/static/chunks/src_app_globals_b805903d.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+2026-03-05T18:17:45.346Z [console][log] [Fast Refresh] done in 1052ms
+2026-03-05T18:17:45.905Z [console][log] [Fast Refresh] rebuilding
+2026-03-05T18:17:46.492Z [console][log] [Fast Refresh] done in 689ms
+2026-03-05T18:17:46.611Z [console][log] [Fast Refresh] rebuilding
+2026-03-05T18:17:46.614Z [console][log] [Fast Refresh] done in 114ms
+2026-03-05T18:17:48.084Z [network][GET 200] /api/posts?page=0&limit=10
+  response: {"data":[{"id":8,"title":"لەخزمەت خۆشەویستدا","excerpt":"زنجیرە بابەتیک لەخزمەت سەروەدا","content":"<p>زنجیرە بابەتیک لەخزمەت سەروەدا</p>","category":null,"category_id":2,"sub_category_id":null,"image_url":"/uploads/1772722394875-mzwbqdc0awq.jpg","status":"published","author_id":"30fe2a93-c1e7-4aea-bc36-017ed4caeb52","created_at":"2026-03-05 14:53:55","views":14},{"id":7,"title":"ئامادەكاری بۆ شەوانی قەدر","excerpt":"ئامادەكاری بۆ شەوانی قەدر.","content":"<p>ئامادەكاری بۆ شەوانی قەدرئامادەكاری بۆ شەوانی قەدر</p><p></p>","category":null,"category_id":2,"sub_category_id":null,"image_url":"/uploads/1772694062962-yhk7ngd152k.png","status":"published","author_id":"30fe2a93-c1e7-4aea-bc36-017ed4caeb52","created_at":"2026-03-02 07:20:07","views":1},{"id":6,"title":"پرۆژەى لەبەر کردنى سورەتى الکهف ","excerpt":"پرۆژەى لەبەر کردنى سورەتى الکهف بە راڤەوە.","content":"<hr><p><strong>بسم الله الرحمن الرحيم</strong> <strong>السلام عليكم ورحمة الله وبركاته</strong></p><h2>[ لەگەڵ قورئان ]</h2><p>پرۆژەیەکی قورئانی لە لایەن <strong>رێکخراوی کوردی چوار</strong> بۆ هەموو هاوڕێیان و خۆشەویستانی <strong>حیفز و تەدەبور</strong> لە قورئانی پیرۆزدا.</p><h3>مەبەست:</h3><p>بۆ زیاتر تێگەیشتن و جێبەجێکردنی قورئانی پیرۆز، بەژداربن لە پرۆژەی لەبەرکردنی سوورەتی <strong>الکهف</strong> بە حیفز و ڕاڤە.</p><hr><h3>ڕێنماییەکان:</h3><p><strong>• بەژداربوون:</strong></p><ul><li><p>کراوەیە بۆ هەموو تەمەن و ئاستێک (ئافرەتان و پیاوان)</p></li></ul><p><strong>• مەرجەکان:</strong></p><ul><li><p>بەژداربوو پێویستە تاقیکردنەوەی <strong>حیفز</strong> و <strong>تەفسیر</strong> هەردووکیان ئەنجام بدات</p></li></ul><p><strong>• سەرچاوەی تەفسیر:</strong></p><ul><li><p>کورتە وانەکانی <strong>م. حیکمەت برادۆستی</strong> و <strong>تەفسیری تەوحیدی</strong></p></li></ul><p><strong>• شێوازی تاقیکردنەوە:</strong></p><ol><li><p><strong>تەفسیر:</strong> بە شێوەی نووسراو</p></li><li><p><strong>حیفز:</strong> بە پێی پێویست (زارەکی یان نووسراو بەگوێرەی ژمارەی بەژداربووان)</p></li></ol><p><strong>• کاتی تاقیکردنەوە:</strong></p><... [truncated]
+2026-03-05T18:17:48.360Z [network][GET 200] /api/categories
+  response: [{"id":1,"name":"زانست","slug":"science","parent_id":null,"count":0},{"id":4,"name":"تەندروستی","slug":"health","parent_id":null,"count":0},{"id":3,"name":"تەکنەلۆژیا","slug":"technology","parent_id":null,"count":0},{"id":2,"name":"پەروەردە","slug":"education","parent_id":null,"count":4}]
