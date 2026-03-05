@@ -23,18 +23,17 @@ const Footer = ({ settings }: { settings?: any }) => {
           {/* Brand Info */}
           <div className="space-y-6">
             <h2 className="text-2xl font-black">{settings?.org_name || 'رێكخراوی كوردی چوار'}</h2>
-            <p className="text-white/60 leading-relaxed max-w-sm">
-              ڕێکخراوێکی ناحکومی تایبەت بە گەشەپێدانی زانست و پەروەردە لە کوردستان. ئێمە کار دەکەین بۆ بونیادنانی نەوەیەکی هۆشیار و زانستخواز.
-            </p>
+              <p className="text-white/60 leading-relaxed max-w-sm">
+                {settings?.footer_description || 'ڕێکخراوێکی ناحکومی تایبەت بە گەشەپێدانی زانست و پەروەردە لە کوردستان. ئێمە کار دەکەین بۆ بونیادنانی نەوەیەکی هۆشیار و زانستخواز.'}
+              </p>
           </div>
 
             {/* Quick Links */}
             <div className="space-y-6">
               <h3 className="text-lg font-bold">بەستەرە خێراکان</h3>
                 <ul className="space-y-3 text-white/60">
-                  <li><a href="/about" className="hover:text-white transition-colors">دەربارە</a></li>
-                  <li><a href="/who-we-are" className="hover:text-white transition-colors">ئێمە کێین</a></li>
-                  <li><a href="/contact" className="hover:text-white transition-colors">پەیوەندی</a></li>
+                    <li><a href="/about" className="hover:text-white transition-colors">دەربارە</a></li>
+                    <li><a href="/contact" className="hover:text-white transition-colors">پەیوەندی</a></li>
                 </ul>
 
             </div>

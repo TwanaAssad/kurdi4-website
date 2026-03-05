@@ -138,9 +138,10 @@ export default function AdminPage() {
     available_languages: ['ku'],
     default_language: 'ku',
     contact_phone: '',
-    contact_email: '',
-    contact_location: ''
-  });
+      contact_email: '',
+      contact_location: '',
+      footer_description: ''
+    });
 
   // Lists
   const [posts, setPosts] = useState<any[]>([]);
@@ -363,10 +364,10 @@ export default function AdminPage() {
   };
 
   const imageDropzone = useDropzone({
-    onDrop: (files) => {
+    onDrop: useCallback((files: File[]) => {
       const field = activeTab === 'users' ? 'avatar_url' : activeTab === 'settings' ? 'logo' : 'image_url';
       handleFileUpload(files[0], field);
-    },
+    }, [activeTab]),
     accept: { 'image/*': [] },
     multiple: false
   });
@@ -1535,11 +1536,22 @@ export default function AdminPage() {
                                    <Upload className="text-white" size={20} />
                                 </div>
                              </div>
-                             <div className="flex-1 space-y-4">
-                                <Label className="font-black text-neutral-400 text-[10px] uppercase tracking-widest mr-2">ناوی ڕێکخراو / دامەزراوە</Label>
-                                <Input value={settings.org_name} onChange={(e) => setSettings((p: any) => ({...p, org_name: e.target.value}))} className="rounded-2xl h-14 border-neutral-100 bg-neutral-50/50 text-right font-bold text-lg focus:ring-8 focus:ring-amber-500/5 transition-all" />
-                             </div>
-                          </div>
+               <div className="flex-1 space-y-4">
+                  <Label className="font-black text-neutral-400 text-[10px] uppercase tracking-widest mr-2">ناوی ڕێکخراو / دامەزراوە</Label>
+                  <Input value={settings.org_name} onChange={(e) => setSettings((p: any) => ({...p, org_name: e.target.value}))} className="rounded-2xl h-14 border-neutral-100 bg-neutral-50/50 text-right font-bold text-lg focus:ring-8 focus:ring-amber-500/5 transition-all" />
+               </div>
+            </div>
+
+            <div className="space-y-4">
+              <Label className="font-black text-neutral-400 text-[10px] uppercase tracking-widest mr-2">پێناسەی فووتەر (خوارەوەی ماڵپەڕ)</Label>
+              <Textarea
+                value={settings.footer_description || ''}
+                onChange={(e) => setSettings((p: any) => ({...p, footer_description: e.target.value}))}
+                rows={3}
+                placeholder="دەقی کورتەکانی ڕێکخراو کە لە فووتەرەکەدا دەردەکەوێت..."
+                className="rounded-2xl border-neutral-100 bg-neutral-50/50 text-right font-bold focus:ring-8 focus:ring-amber-500/5 transition-all resize-none"
+              />
+            </div>
 
                           <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-4">

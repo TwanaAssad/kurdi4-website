@@ -17,6 +17,7 @@ export const siteSettings = mysqlTable("site_settings", {
   contact_phone: varchar("contact_phone", { length: 50 }),
   contact_email: varchar("contact_email", { length: 255 }),
   contact_location: text("contact_location"),
+  footer_description: text("footer_description"),
 });
 
 export const categories = mysqlTable("categories", {

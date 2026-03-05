@@ -506,10 +506,11 @@ export async function updateSiteSettingsAction(data: any) {
     const socialInstagram = data.social_instagram || null;
     const socialLinkedin = data.social_linkedin || null;
     const socialYoutube = data.social_youtube || null;
-    const contactPhone = data.contact_phone || null;
-    const contactEmail = data.contact_email || null;
-    const contactLocation = data.contact_location || null;
-    const defaultLanguage = data.default_language || 'ku';
+      const contactPhone = data.contact_phone || null;
+      const contactEmail = data.contact_email || null;
+      const contactLocation = data.contact_location || null;
+      const footerDescription = data.footer_description || null;
+      const defaultLanguage = data.default_language || 'ku';
     const availableLanguages = Array.isArray(data.available_languages) 
       ? JSON.stringify(data.available_languages) 
       : '["ku"]';
@@ -526,10 +527,11 @@ export async function updateSiteSettingsAction(data: any) {
         social_instagram = ${socialInstagram},
         social_linkedin = ${socialLinkedin},
         social_youtube = ${socialYoutube},
-        contact_phone = ${contactPhone},
-        contact_email = ${contactEmail},
-        contact_location = ${contactLocation},
-        default_language = ${defaultLanguage},
+          contact_phone = ${contactPhone},
+          contact_email = ${contactEmail},
+          contact_location = ${contactLocation},
+          footer_description = ${footerDescription},
+          default_language = ${defaultLanguage},
         available_languages = ${availableLanguages}
       WHERE id = (SELECT min_id FROM (SELECT MIN(id) as min_id FROM site_settings) as t)
     `);

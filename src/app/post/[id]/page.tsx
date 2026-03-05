@@ -106,18 +106,18 @@ export default async function PostPage({ params }: PostPageProps) {
                   alt={post.title}
                   className="object-cover w-full h-full absolute inset-0"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                <div className="absolute bottom-10 right-10 text-white z-10">
-                  <a 
-                    href={post.categorySlug ? `/category/${post.categorySlug}` : '#'}
-                    className="bg-[#c29181] px-6 py-2 rounded-2xl text-xs font-black shadow-lg mb-4 inline-block hover:bg-[#563a4a] transition-all"
-                  >
-                    {post.categoryName}
-                  </a>
-                  <h1 className="text-3xl md:text-5xl font-black leading-tight drop-shadow-md">
-                    {post.title}
-                  </h1>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10 rounded-3xl" />
+                  <div className="absolute bottom-10 right-10 text-white z-20">
+                    <a 
+                      href={post.categorySlug ? `/category/${post.categorySlug}` : '#'}
+                      className="bg-[#c29181] px-6 py-2 rounded-2xl text-xs font-black shadow-lg mb-4 inline-block hover:bg-[#563a4a] transition-all"
+                    >
+                      {post.categoryName}
+                    </a>
+                    <h1 className="text-3xl md:text-5xl font-black leading-tight" style={{textShadow: '0 0 8px rgba(255,255,255,0.9), 0 2px 12px rgba(255,255,255,0.7), 0 1px 4px rgba(255,255,255,0.8)'}}>
+                      {post.title}
+                    </h1>
+                  </div>
               </div>
 
             {/* Post Meta */}
@@ -142,10 +142,10 @@ export default async function PostPage({ params }: PostPageProps) {
                 {post.excerpt}
               </div>
               
-              <div 
-                className="prose prose-xl max-w-none text-[#563a4a] leading-[2.2] font-medium whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-              />
+                <div 
+                  className="prose prose-xl max-w-none text-[#563a4a] leading-[2.2] font-medium whitespace-pre-wrap [&_iframe]:w-full [&_iframe]:rounded-xl [&_iframe]:my-4 [&_iframe]:aspect-video [&_video]:w-full [&_video]:rounded-xl [&_video]:my-4"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
 
               {/* Tags Only */}
               <div className="mt-16 pt-10 border-t border-gray-100 flex flex-col md:flex-row items-center justify-end gap-6">
