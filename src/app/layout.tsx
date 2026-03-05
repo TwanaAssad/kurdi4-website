@@ -41,6 +41,13 @@ export default async function RootLayout({
     return (
       <html lang={lang} dir={dir}>
         <head>
+          {settings?.logo_url && (
+            <>
+              <link rel="icon" href={settings.logo_url} />
+              <link rel="shortcut icon" href={settings.logo_url} />
+              <link rel="apple-touch-icon" href={settings.logo_url} />
+            </>
+          )}
           <style dangerouslySetInnerHTML={{ __html: `
           :root {
             --primary: ${settings?.primary_color || '#563a4a'};
