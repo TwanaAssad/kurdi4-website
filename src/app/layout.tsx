@@ -7,10 +7,21 @@ import { Toaster } from "@/components/ui/sonner";
 import { getSiteSettings } from "@/lib/settings";
 import { trackVisitAction } from "@/lib/actions";
 
-export const metadata: Metadata = {
-  title: "رێكخراوی كوردی چوار بۆ زانست و پەروەردە",
-  description: "دەزگای ڕووناکی بۆ زانست و پەروەردە",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const title = settings?.org_name || "رێكخراوی كوردی چوار بۆ زانست و پەروەردە";
+  const description = settings?.footer_description || settings?.org_name || "رێكخراوی كوردی چوار بۆ زانست و پەروەردە";
+  const logoUrl = settings?.logo_url;
+  return {
+    title,
+    description,
+    icons: logoUrl
+      ? { icon: logoUrl, apple: logoUrl, shortcut: logoUrl }
+      : undefined,
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary", title, description },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -30,12 +41,6 @@ export default async function RootLayout({
     return (
       <html lang={lang} dir={dir}>
         <head>
-          {settings?.logo_url && (
-            <>
-              <link rel="icon" href={settings.logo_url} type="image/png" />
-              <link rel="apple-touch-icon" href={settings.logo_url} />
-            </>
-          )}
           <style dangerouslySetInnerHTML={{ __html: `
           :root {
             --primary: ${settings?.primary_color || '#563a4a'};

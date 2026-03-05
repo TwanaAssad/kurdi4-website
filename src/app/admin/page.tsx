@@ -1223,10 +1223,10 @@ export default function AdminPage() {
                                 <TableCell className="p-6 text-right font-bold text-neutral-500">{post.profiles?.full_name || 'بێ ناو'}</TableCell>
                                 <TableCell className="p-6 text-right">
                                   <div className="flex flex-col gap-1 items-end">
-                                    <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase text-center">{post.category_name?.name || post.category}</span>
-                                    {post.sub_category_name?.name && (
-                                      <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-full border border-indigo-100 uppercase text-center">{post.sub_category_name.name}</span>
-                                    )}
+                                      <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100 uppercase text-center">{post.cat_name || post.category || '—'}</span>
+                                      {post.sub_cat_name && (
+                                        <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-full border border-indigo-100 uppercase text-center">{post.sub_cat_name}</span>
+                                      )}
                                   </div>
                                 </TableCell>
                                 <TableCell className="p-6 text-right">

@@ -6,12 +6,37 @@ import Footer from "@/components/sections/Footer";
 import SidebarWidgets from "@/components/sections/SidebarWidgets";
 import { getSiteSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
-import { posts, categories, postTags, tags } from "@/lib/schema";
+import { posts, categories, postTags, tags, profiles } from "@/lib/schema";
 import { eq, sql, and, ne, aliasedTable } from "drizzle-orm";
 import { Eye, Calendar, User } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const post = await getPost(id);
+  if (!post) return {};
+  const title = post.title;
+  const description = post.excerpt || post.title;
+  const image = post.image_url ? `https://kurdi4.org${post.image_url}` : undefined;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      ...(image ? { images: [{ url: image }] } : {}),
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
+  };
+}
 
 interface PostPageProps {
   params: Promise<{ id: string }>;
@@ -39,13 +64,15 @@ async function getPost(id: string) {
       author_id: posts.author_id,
       created_at: posts.created_at,
       views: posts.views,
-      categoryName: sql<string>`COALESCE(${cat.name}, ${posts.category}, 'گشتی')`,
-      categorySlug: sql<string>`COALESCE(${cat.slug}, 'general')`,
-      mainCategoryName: sql<string>`COALESCE(${parentCat.name}, ${cat.name}, ${posts.category}, 'گشتی')`,
-    })
-    .from(posts)
-    .leftJoin(cat, eq(posts.category_id, cat.id))
-    .leftJoin(parentCat, eq(cat.parent_id, parentCat.id))
+        categoryName: sql<string>`COALESCE(${cat.name}, ${posts.category}, 'گشتی')`,
+        categorySlug: sql<string>`COALESCE(${cat.slug}, 'general')`,
+        mainCategoryName: sql<string>`COALESCE(${parentCat.name}, ${cat.name}, ${posts.category}, 'گشتی')`,
+        authorName: profiles.full_name,
+      })
+      .from(posts)
+      .leftJoin(cat, eq(posts.category_id, cat.id))
+      .leftJoin(parentCat, eq(cat.parent_id, parentCat.id))
+      .leftJoin(profiles, eq(posts.author_id, profiles.id))
     .where(eq(posts.id, postId))
     .limit(1);
 
@@ -132,7 +159,7 @@ export default async function PostPage({ params }: PostPageProps) {
               </div>
               <div className="flex items-center gap-3 text-gray-500 font-bold text-sm">
                 <User size={18} className="text-[#c29181]" />
-                <span>نووسەر: دەستەی کارگێڕی</span>
+                  <span>نووسەر: {post.authorName || 'دەستەی کارگێڕی'}</span>
               </div>
             </div>
 

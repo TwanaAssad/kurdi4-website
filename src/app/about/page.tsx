@@ -7,6 +7,9 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { Target, Eye, Lightbulb } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getPageData() {
   try {
     const result = await db.execute(sql.raw(`SELECT * FROM pages WHERE slug = 'about' LIMIT 1`)) as any;

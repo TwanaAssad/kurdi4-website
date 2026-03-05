@@ -66,36 +66,39 @@ export async function getPostsAction(params: any = {}) {
     const limitNum = pageSize;
 
     const whereSegments = [sql`1=1`];
-    if (searchTerm) {
-      whereSegments.push(sql`posts.title LIKE ${`%${searchTerm}%`}`);
-    }
-    if (statusFilter && statusFilter !== 'all') {
-      whereSegments.push(sql`posts.status = ${statusFilter}`);
-    }
-    if (authorFilter && authorFilter !== 'all') {
-      whereSegments.push(sql`posts.author_id = ${authorFilter}`);
-    }
-    if (dateFilter) {
-      const dateObj = new Date(dateFilter);
-      if (!isNaN(dateObj.getTime())) {
-        whereSegments.push(sql`DATE(posts.created_at) >= ${dateFilter}`);
+      if (searchTerm) {
+        whereSegments.push(sql`p.title LIKE ${`%${searchTerm}%`}`);
+      }
+      if (statusFilter && statusFilter !== 'all') {
+        whereSegments.push(sql`p.status = ${statusFilter}`);
+      }
+      if (authorFilter && authorFilter !== 'all') {
+        whereSegments.push(sql`p.author_id = ${authorFilter}`);
+      }
+      if (dateFilter) {
+        const dateObj = new Date(dateFilter);
+        if (!isNaN(dateObj.getTime())) {
+          whereSegments.push(sql`DATE(p.created_at) >= ${dateFilter}`);
       }
     }
 
     const whereClause = sql.join(whereSegments, sql` AND `);
 
     // Using sql.raw for LIMIT/OFFSET to avoid MySQL "LIMIT ?" issues
-    const dataResult = await db.execute(
-      sql`SELECT id, title, content, excerpt, category, category_id, sub_category_id, image_url, status, author_id, created_at, views 
-          FROM posts 
-          WHERE ${whereClause} 
-          ORDER BY created_at DESC 
-          LIMIT ${sql.raw(limitNum.toString())} 
-          OFFSET ${sql.raw(offsetNum.toString())}`
-    ) as any;
+      const dataResult = await db.execute(
+        sql`SELECT p.id, p.title, p.content, p.excerpt, p.category, p.category_id, p.sub_category_id, p.image_url, p.status, p.author_id, p.created_at, p.views,
+                   c.name as cat_name, sc.name as sub_cat_name
+            FROM posts p
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN categories sc ON p.sub_category_id = sc.id
+            WHERE ${whereClause} 
+            ORDER BY p.created_at DESC 
+            LIMIT ${sql.raw(limitNum.toString())} 
+            OFFSET ${sql.raw(offsetNum.toString())}`
+      ) as any;
 
     const countResult = await db.execute(
-      sql`SELECT COUNT(*) as total FROM posts WHERE ${whereClause}`
+      sql`SELECT COUNT(*) as total FROM posts p WHERE ${whereClause}`
     ) as any;
 
     const data = getRows(dataResult).map(page => {
