@@ -458,7 +458,7 @@ export default function AdminPage() {
         sub_category_id: item.sub_category_id || '',
         image_url: item.image_url,
         status: item.status || 'published',
-        selectedTags: item.post_tags?.map((pt: any) => pt.tag_id) || []
+        selectedTags: item.post_tags?.map((pt: any) => Number(pt.tag_id)) || []
       });
     } else if (activeTab === 'tags') {
       setFormData({
@@ -1792,28 +1792,31 @@ export default function AdminPage() {
                             <div className="space-y-4">
                               <Label className="font-black text-neutral-500 text-[10px] uppercase tracking-[0.2em] mr-4">تاگەکان</Label>
                               <div className="flex flex-wrap gap-3 bg-neutral-50 p-6 rounded-3xl border border-neutral-100 shadow-inner">
-                                {tags.map(tag => (
-                                  <button
-                                    key={tag.id}
-                                    type="button"
-                                    onClick={() => {
-                                      const selected = formData.selectedTags.includes(tag.id);
-                                      setFormData((p: any) => ({
-                                        ...p,
-                                        selectedTags: selected 
-                                          ? p.selectedTags.filter((id: string) => id !== tag.id)
-                                          : [...p.selectedTags, tag.id]
-                                      }));
-                                    }}
-                                    className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all border ${
-                                      formData.selectedTags.includes(tag.id)
-                                      ? 'bg-blue-500 text-white border-blue-600 shadow-md scale-105'
-                                      : 'bg-white text-neutral-400 border-neutral-100 hover:border-blue-200'
-                                    }`}
-                                  >
-                                    {tag.name}
-                                  </button>
-                                ))}
+                                {tags.map(tag => {
+                                    const tagId = Number(tag.id);
+                                    const isSelected = formData.selectedTags.map(Number).includes(tagId);
+                                    return (
+                                    <button
+                                      key={tagId}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData((p: any) => ({
+                                          ...p,
+                                          selectedTags: isSelected
+                                            ? p.selectedTags.map(Number).filter((id: number) => id !== tagId)
+                                            : [...p.selectedTags.map(Number), tagId]
+                                        }));
+                                      }}
+                                      className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all border ${
+                                        isSelected
+                                        ? 'bg-blue-500 text-white border-blue-600 shadow-md scale-105'
+                                        : 'bg-white text-neutral-400 border-neutral-100 hover:border-blue-200'
+                                      }`}
+                                    >
+                                      {tag.name}
+                                    </button>
+                                    );
+                                  })}
                                 {tags.length === 0 && <p className="text-xs text-neutral-400 font-bold">هیچ تاگێک بوونی نییە. سەرەتا لە بەشی تاگەکان دروستی بکە.</p>}
                               </div>
                             </div>

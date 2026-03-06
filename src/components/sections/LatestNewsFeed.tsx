@@ -8,45 +8,32 @@ interface Article {
   title: string;
   excerpt: string;
   category: string;
+  category_name: string;
+  category_slug: string;
   created_at: string;
   views: number;
   image_url: string;
-  main_category: string;
 }
 
 const ITEMS_PER_PAGE = 10;
 
 export default function LatestNewsFeed() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPosts() {
       setLoading(true);
       try {
-        // Fetch categories for slug mapping
-        const catRes = await fetch('/api/categories');
-        const catData = await catRes.json();
-        if (catData && Array.isArray(catData)) {
-          const map: Record<string, string> = {};
-          catData.forEach(c => map[c.name] = c.slug);
-          setCategories(map);
-        }
-
-        // Build query URL
         let url = `/api/posts?page=${page}&limit=${ITEMS_PER_PAGE}`;
         if (selectedCategory) {
           url += `&category=${encodeURIComponent(selectedCategory)}`;
         }
-
         const res = await fetch(url);
         const { data, total } = await res.json();
-
         if (data) {
           setArticles(data);
           setTotalCount(total || 0);
@@ -57,11 +44,8 @@ export default function LatestNewsFeed() {
         setLoading(false);
       }
     }
-
     fetchPosts();
   }, [page, selectedCategory]);
-
-  const categoryList = Object.keys(categories);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
@@ -96,12 +80,14 @@ export default function LatestNewsFeed() {
                     alt={article.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 absolute inset-0"
                   />
-                  <a 
-                    href={categories[article.main_category] ? `/category/${categories[article.main_category]}` : '#'}
-                    className="absolute top-4 right-4 bg-white/95 backdrop-blur-md text-[#563a4a] px-4 py-1.5 rounded-xl text-[10px] font-black shadow-sm hover:bg-[#c29181] hover:text-white transition-all z-10 border border-gray-100/50"
-                  >
-                    {article.main_category || 'گشتی'}
-                  </a>
+                    {article.category_name && (
+                      <a 
+                        href={`/category/${article.category_slug}`}
+                        className="absolute top-4 right-4 bg-white/95 backdrop-blur-md text-[#563a4a] px-4 py-1.5 rounded-xl text-[10px] font-black shadow-sm hover:bg-[#c29181] hover:text-white transition-all z-10 border border-gray-100/50"
+                      >
+                        {article.category_name}
+                      </a>
+                    )}
               </div>
             </div>
 

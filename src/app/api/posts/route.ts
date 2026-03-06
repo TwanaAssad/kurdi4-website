@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     const whereStr = conditions.join(" AND ");
 
     const dataResult = await db.execute(sql.raw(
-      `SELECT posts.id, posts.title, posts.excerpt, posts.content, posts.category, posts.category_id, posts.sub_category_id, posts.image_url, posts.status, posts.author_id, posts.created_at, posts.views FROM posts WHERE ${whereStr} ORDER BY posts.created_at DESC LIMIT ${limit} OFFSET ${offset}`
+      `SELECT posts.id, posts.title, posts.excerpt, posts.content, posts.category, posts.category_id, posts.sub_category_id, posts.image_url, posts.status, posts.author_id, posts.created_at, posts.views, c.name as category_name, c.slug as category_slug FROM posts LEFT JOIN categories c ON c.id = posts.category_id WHERE ${whereStr} ORDER BY posts.created_at DESC LIMIT ${limit} OFFSET ${offset}`
     )) as any;
 
     const countResult = await db.execute(sql.raw(

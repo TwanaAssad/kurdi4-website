@@ -49,10 +49,10 @@ const Header = ({ settings }: { settings?: any }) => {
                 </div>
               </a>
               <div className="h-16 md:h-20 w-1 bg-[#563a4a]"></div>
-              <div className="text-left">
-                <h1 className="text-2xl md:text-4xl font-black text-[#563a4a] leading-tight tracking-tight">{settings?.org_name || "رێكخراوی كوردی چوار"}</h1>
-                <p className="text-lg text-gray-500 font-medium mt-1">بۆ زانست و پەروەردە</p>
-              </div>
+                <div className="text-right">
+                  <h1 className="text-2xl md:text-4xl font-black text-[#563a4a] leading-tight tracking-tight">{settings?.org_name || "رێكخراوی كوردی چوار"}</h1>
+                  <p className="text-lg text-gray-500 font-medium mt-1">بۆ زانست و پەروەردە</p>
+                </div>
             </div>
 
           {/* Search Area (Desktop) */}

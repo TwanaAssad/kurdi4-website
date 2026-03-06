@@ -189,3 +189,4 @@ f:I["[project]/node_modules/next/dist/client/components/metadata/async-metadata.
 1d:"$Sreact.suspense"
 1e:I["[project]/node_modules/next/dist/client/components/metadata/async-metadata.js [app-client] (ecmascript)",["/_next/static/chunks/node_modules_next_dist_1a6ee436._.js","/_next/static/chunks/src_app_favicon_ico_mjs_756fb309._.js"],"AsyncMetadata"]
 5:{"name":"RootLayout","env":"Server","key":null,"owner":null,"stack":[],"props":{... [truncated]
+2026-03-06T19:42:52.585Z [console][warn] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
