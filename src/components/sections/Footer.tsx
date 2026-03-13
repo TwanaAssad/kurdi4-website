@@ -1,5 +1,20 @@
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 
+const TelegramIcon = ({ size = 20 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-16.5 6.75a2.25 2.25 0 0 0 .126 4.238l3.553 1.184 2.056 6.174a.75.75 0 0 0 1.278.267l2.695-2.99 3.965 2.975a2.25 2.25 0 0 0 3.495-1.385l2.907-16.5a2.25 2.25 0 0 0-2.553-2.928z" />
+  </svg>
+);
+
 const TiktokIcon = ({ size = 20 }: { size?: number }) => (
   <svg 
     width={size} 
@@ -54,6 +69,11 @@ const Footer = ({ settings }: { settings?: any }) => {
                  <a href={settings?.social_youtube || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-red-600 transition-all">
                    <Youtube size={20} />
                  </a>
+                 {settings?.social_telegram && (
+                   <a href={settings.social_telegram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-[#229ED9] transition-all">
+                     <TelegramIcon size={20} />
+                   </a>
+                 )}
               </div>
             </div>
         </div>

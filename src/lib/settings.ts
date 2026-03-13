@@ -23,6 +23,7 @@ const defaultSettings = {
   social_instagram: '',
   social_linkedin: '',
   social_youtube: '',
+  social_telegram: '',
   available_languages: ['ku'],
   default_language: 'ku'
 };

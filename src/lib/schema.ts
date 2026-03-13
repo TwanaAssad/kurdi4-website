@@ -12,6 +12,7 @@ export const siteSettings = mysqlTable("site_settings", {
   social_instagram: text("social_instagram"),
   social_linkedin: text("social_linkedin"),
   social_youtube: text("social_youtube"),
+  social_telegram: text("social_telegram"),
   available_languages: json("available_languages").default(["ku"]),
   default_language: varchar("default_language", { length: 5 }).default("ku"),
   contact_phone: varchar("contact_phone", { length: 50 }),

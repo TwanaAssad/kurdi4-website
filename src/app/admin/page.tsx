@@ -135,6 +135,7 @@ export default function AdminPage() {
     social_instagram: '',
     social_linkedin: '',
     social_youtube: '',
+    social_telegram: '',
     available_languages: ['ku'],
     default_language: 'ku',
     contact_phone: '',
@@ -1587,6 +1588,7 @@ export default function AdminPage() {
                              { id: 'social_tiktok', label: 'TikTok', icon: <Music2 size={20} className="text-black" /> },
                              { id: 'social_instagram', label: 'Instagram', icon: <Instagram size={20} className="text-[#E4405F]" /> },
                              { id: 'social_youtube', label: 'YouTube', icon: <Youtube size={20} className="text-[#FF0000]" /> },
+                             { id: 'social_telegram', label: 'Telegram', icon: <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#229ED9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-16.5 6.75a2.25 2.25 0 0 0 .126 4.238l3.553 1.184 2.056 6.174a.75.75 0 0 0 1.278.267l2.695-2.99 3.965 2.975a2.25 2.25 0 0 0 3.495-1.385l2.907-16.5a2.25 2.25 0 0 0-2.553-2.928z"/></svg> },
                            ].map((social) => (
                              <div key={social.id} className="space-y-3">
                                 <Label className="font-black text-neutral-400 text-[10px] uppercase tracking-widest mr-2 flex items-center gap-2">

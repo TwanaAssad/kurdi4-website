@@ -509,6 +509,7 @@ export async function updateSiteSettingsAction(data: any) {
     const socialInstagram = data.social_instagram || null;
     const socialLinkedin = data.social_linkedin || null;
     const socialYoutube = data.social_youtube || null;
+    const socialTelegram = data.social_telegram || null;
       const contactPhone = data.contact_phone || null;
       const contactEmail = data.contact_email || null;
       const contactLocation = data.contact_location || null;
@@ -530,6 +531,7 @@ export async function updateSiteSettingsAction(data: any) {
         social_instagram = ${socialInstagram},
         social_linkedin = ${socialLinkedin},
         social_youtube = ${socialYoutube},
+        social_telegram = ${socialTelegram},
           contact_phone = ${contactPhone},
           contact_email = ${contactEmail},
           contact_location = ${contactLocation},
