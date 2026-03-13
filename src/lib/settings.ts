@@ -1,5 +1,6 @@
 import { db } from './db';
 import { siteSettings } from './schema';
+import { sql } from 'drizzle-orm';
 
 export function getRows(result: any): any[] {
   if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0]) && Array.isArray(result[1])) {
@@ -30,8 +31,10 @@ const defaultSettings = {
 
 export async function getSiteSettings() {
   try {
-    const result = await db.select().from(siteSettings).limit(1);
-    const settings = result[0] ?? defaultSettings;
+    // Use SELECT * with raw SQL to avoid schema/column mismatch errors
+    const result = await db.execute(sql`SELECT * FROM site_settings LIMIT 1`) as any;
+    const rows = Array.isArray(result[0]) ? result[0] : result;
+    const settings = rows[0] ?? defaultSettings;
     
     // Ensure available_languages is an array
     if (settings && typeof settings.available_languages === 'string') {

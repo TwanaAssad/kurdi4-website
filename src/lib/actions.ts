@@ -489,8 +489,10 @@ export async function deleteProfileAction(id: string) {
 // --- Site Settings ---
 export async function getSiteSettingsAction() {
   try {
-    const result = await db.select().from(siteSettings).limit(1);
-    return result[0] ?? null;
+    // Use SELECT * with raw SQL to avoid schema/column mismatch errors
+    const result = await db.execute(sql`SELECT * FROM site_settings LIMIT 1`) as any;
+    const rows = Array.isArray(result[0]) ? result[0] : result;
+    return rows[0] ?? null;
   } catch (error) {
     console.error("Failed to fetch site settings:", error);
     return null;
@@ -510,16 +512,16 @@ export async function updateSiteSettingsAction(data: any) {
     const socialLinkedin = data.social_linkedin || null;
     const socialYoutube = data.social_youtube || null;
     const socialTelegram = data.social_telegram || null;
-      const contactPhone = data.contact_phone || null;
-      const contactEmail = data.contact_email || null;
-      const contactLocation = data.contact_location || null;
-      const footerDescription = data.footer_description || null;
-      const defaultLanguage = data.default_language || 'ku';
-    const availableLanguages = Array.isArray(data.available_languages) 
-      ? JSON.stringify(data.available_languages) 
+    const contactPhone = data.contact_phone || null;
+    const contactEmail = data.contact_email || null;
+    const contactLocation = data.contact_location || null;
+    const footerDescription = data.footer_description || null;
+    const defaultLanguage = data.default_language || 'ku';
+    const availableLanguages = Array.isArray(data.available_languages)
+      ? JSON.stringify(data.available_languages)
       : '["ku"]';
 
-    await db.execute(sql`
+    const runUpdate = () => db.execute(sql`
       UPDATE site_settings SET
         org_name = ${orgName},
         logo_url = ${logoUrl},
@@ -531,15 +533,48 @@ export async function updateSiteSettingsAction(data: any) {
         social_instagram = ${socialInstagram},
         social_linkedin = ${socialLinkedin},
         social_youtube = ${socialYoutube},
-        social_telegram = ${socialTelegram},
+        contact_phone = ${contactPhone},
+        contact_email = ${contactEmail},
+        contact_location = ${contactLocation},
+        footer_description = ${footerDescription},
+        default_language = ${defaultLanguage},
+        available_languages = ${availableLanguages}
+      WHERE id = (SELECT min_id FROM (SELECT MIN(id) as min_id FROM site_settings) as t)
+    `);
+
+    try {
+      // Try to add the telegram column (silently ignore any error — column may already exist)
+      await db.execute(sql`ALTER TABLE site_settings ADD COLUMN social_telegram TEXT NULL`);
+    } catch (_) { /* ignore */ }
+
+    try {
+      // Try update with telegram column
+      await db.execute(sql`
+        UPDATE site_settings SET
+          org_name = ${orgName},
+          logo_url = ${logoUrl},
+          primary_color = ${primaryColor},
+          secondary_color = ${secondaryColor},
+          accent_color = ${accentColor},
+          social_facebook = ${socialFacebook},
+          social_tiktok = ${socialTiktok},
+          social_instagram = ${socialInstagram},
+          social_linkedin = ${socialLinkedin},
+          social_youtube = ${socialYoutube},
+          social_telegram = ${socialTelegram},
           contact_phone = ${contactPhone},
           contact_email = ${contactEmail},
           contact_location = ${contactLocation},
           footer_description = ${footerDescription},
           default_language = ${defaultLanguage},
-        available_languages = ${availableLanguages}
-      WHERE id = (SELECT min_id FROM (SELECT MIN(id) as min_id FROM site_settings) as t)
-    `);
+          available_languages = ${availableLanguages}
+        WHERE id = (SELECT min_id FROM (SELECT MIN(id) as min_id FROM site_settings) as t)
+      `);
+    } catch (updateErr: any) {
+      // Fallback: update without telegram column (column truly doesn't exist and can't be added)
+      console.warn("Telegram column update failed, retrying without it:", String(updateErr));
+      await runUpdate();
+    }
 
     revalidatePath("/admin");
     revalidatePath("/");
