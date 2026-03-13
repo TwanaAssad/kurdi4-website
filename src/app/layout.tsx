@@ -60,6 +60,14 @@ export default async function RootLayout({
             --primary: ${settings?.primary_color || '#563a4a'};
             --secondary: ${settings?.secondary_color || '#c29181'};
             --accent: ${settings?.accent_color || '#f0ecee'};
+            --color-primary: ${settings?.primary_color || '#563a4a'};
+            --color-accent: ${settings?.secondary_color || '#c29181'};
+            --color-chart-1: ${settings?.primary_color || '#563a4a'};
+            --color-chart-2: ${settings?.secondary_color || '#c29181'};
+            --color-ring: ${settings?.primary_color || '#563a4a'};
+            --color-sidebar-primary: ${settings?.primary_color || '#563a4a'};
+            --color-sidebar-accent-foreground: ${settings?.secondary_color || '#c29181'};
+            --color-sidebar-ring: ${settings?.primary_color || '#563a4a'};
           }
           #theme-header h1, #theme-header p, #theme-header a, #theme-header input {
             color: ${settings?.primary_color || '#563a4a'} !important;
@@ -78,6 +86,33 @@ export default async function RootLayout({
           }
           .bg-\\[\\#fdf8f6\\], .bg-\\[\\#f0ecee\\] {
             background-color: ${settings?.accent_color || '#f0ecee'} !important;
+          }
+          .bg-\\[\\#c29181\\] {
+            background-color: ${settings?.secondary_color || '#c29181'} !important;
+          }
+          .text-\\[\\#c29181\\] {
+            color: ${settings?.secondary_color || '#c29181'} !important;
+          }
+          .border-\\[\\#c29181\\] {
+            border-color: ${settings?.secondary_color || '#c29181'} !important;
+          }
+          .hover\\:bg-\\[\\#c29181\\]:hover {
+            background-color: ${settings?.secondary_color || '#c29181'} !important;
+          }
+          .hover\\:text-\\[\\#c29181\\]:hover {
+            color: ${settings?.secondary_color || '#c29181'} !important;
+          }
+          .shadow-\\[\\#c29181\\], .shadow-\\[\\#c29181\\]\\/20 {
+            --tw-shadow-color: ${settings?.secondary_color || '#c29181'} !important;
+          }
+          .bg-\\[\\#c29181\\]\\/10, .bg-\\[\\#c29181\\]\\/20 {
+            background-color: ${settings?.secondary_color || '#c29181'}33 !important;
+          }
+          .focus\\:ring-\\[\\#c29181\\]\\/20:focus {
+            --tw-ring-color: ${settings?.secondary_color || '#c29181'}33 !important;
+          }
+          .stop-color-\\[\\#c29181\\] {
+            stop-color: ${settings?.secondary_color || '#c29181'} !important;
           }
         `}} />
       </head>
