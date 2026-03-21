@@ -133,7 +133,7 @@ const TiktokIcon = ({ size = 20 }: { size?: number }) => (
 
       <section className="bg-[#563a4a] p-8 rounded-3xl shadow-lg text-white relative overflow-hidden">
         <div className="relative z-10 text-right">
-          <h2 className="text-xl font-black mb-4">پەیوەندیمان پێوە بکەن</h2>
+          <h2 className="text-xl font-black mb-4 text-white">پەیوەندیمان پێوە بکەن</h2>
           <p className="text-white/70 text-sm mb-6 leading-relaxed">فۆڵۆومان بکەن لە سۆشیال میدیا بۆ ئاگاداربوون لە دوایین چالاکی و بەرنامەکانمان.</p>
           <div className="flex gap-4 justify-end">
             <a href={settings?.social_facebook || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-600 transition-all"><Facebook size={18} /></a>
