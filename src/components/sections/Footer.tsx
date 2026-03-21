@@ -37,16 +37,16 @@ const Footer = ({ settings }: { settings?: any }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Brand Info */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-black">{settings?.org_name || 'رێكخراوی كوردی چوار'}</h2>
-              <p className="text-white/60 leading-relaxed max-w-sm">
+            <h2 className="text-2xl font-black text-white">{settings?.org_name || 'رێكخراوی كوردی چوار'}</h2>
+              <p className="text-white/85 leading-relaxed max-w-sm">
                 {settings?.footer_description || 'ڕێکخراوێکی ناحکومی تایبەت بە گەشەپێدانی زانست و پەروەردە لە کوردستان. ئێمە کار دەکەین بۆ بونیادنانی نەوەیەکی هۆشیار و زانستخواز.'}
               </p>
           </div>
 
             {/* Quick Links */}
             <div className="space-y-6">
-              <h3 className="text-lg font-bold">بەستەرە خێراکان</h3>
-                <ul className="space-y-3 text-white/60">
+              <h3 className="text-lg font-bold text-white">بەستەرە خێراکان</h3>
+                <ul className="space-y-3 text-white/85">
                     <li><a href="/about" className="hover:text-white transition-colors">دەربارە</a></li>
                     <li><a href="/contact" className="hover:text-white transition-colors">پەیوەندی</a></li>
                 </ul>
@@ -55,7 +55,7 @@ const Footer = ({ settings }: { settings?: any }) => {
 
             {/* Social Links */}
             <div className="space-y-6">
-              <h3 className="text-lg font-bold">لەگەڵمان بن</h3>
+              <h3 className="text-lg font-bold text-white">لەگەڵمان بن</h3>
               <div className="flex gap-4">
                  <a href={settings?.social_facebook || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-blue-600 transition-all">
                    <Facebook size={20} />
@@ -78,7 +78,7 @@ const Footer = ({ settings }: { settings?: any }) => {
             </div>
         </div>
 
-            <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
+            <div className="pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-4 text-white/80 text-sm">
               <p>رێکخرواى کوردى چوار بۆ زانست و پەروەردە  © 2026 . هەموو مافەکان پارێزراون.</p>
             </div>
       </div>
